@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global Reset & Base ─────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #0A0A0A;
+  color: #F5F0E8;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: none;
+  overflow-x: hidden;
+}
+
+/* Hide default cursor on all interactive elements */
+a, button, input, select, textarea, [role="button"] {
+  cursor: none;
+}
+
+/* Touch devices — restore default cursor */
+@media (hover: none) {
+  body, a, button, input, select, textarea, [role="button"] {
+    cursor: auto;
+  }
+}
+
+/* ── Film Grain Overlay ─────────────────────────────────── */
+.film-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Typography Utilities ───────────────────────────────── */
+.font-cormorant { font-family: 'Cormorant Garamond', serif; }
+.font-dm { font-family: 'DM Sans', sans-serif; }
+
+.text-fluid-hero {
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  line-height: 1.05;
+}
+
+.text-fluid-section {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.label-caps {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ── Nav Link Hover Underline ───────────────────────────── */
+.nav-link {
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: rgba(245, 240, 232, 0.7);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  padding-bottom: 3px;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #C9A96E;
+  transition: width 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #F5F0E8;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* ── Masonry Gallery ────────────────────────────────────── */
+.masonry-grid {
+  columns: 1;
+  column-gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .masonry-grid { columns: 2; }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid { columns: 3; }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 12px;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0A0A0A; }
+::-webkit-scrollbar-thumb { background: #C9A96E44; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #C9A96E88; }
+
+/* ── Marquee ────────────────────────────────────────────── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee 40s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Scroll indicator bounce ────────────────────────────── */
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(10px); opacity: 0.5; }
+}
+
+.bounce-slow { animation: bounce-slow 2.2s ease-in-out infinite; }
+
+/* ── Gradient Photo Placeholders ───────────────────────── */
+.photo-placeholder-warm {
+  background: linear-gradient(135deg, #1a1209 0%, #2d1f0a 30%, #1a1510 60%, #0d0b08 100%);
+}
+
+.photo-placeholder-cool {
+  background: linear-gradient(135deg, #0a0d1a 0%, #0f1520 40%, #0d1018 70%, #08090d 100%);
+}
+
+.photo-placeholder-neutral {
+  background: linear-gradient(135deg, #111111 0%, #1a1a18 40%, #141412 70%, #0a0a09 100%);
+}
+
+.photo-placeholder-amber {
+  background: linear-gradient(135deg, #180f04 0%, #2a1a08 35%, #1a1108 65%, #0d0906 100%);
+}
+
+.photo-placeholder-rose {
+  background: linear-gradient(135deg, #180812 0%, #251020 40%, #1a0d15 70%, #0d080a 100%);
+}
+
+/* ── Frosted Glass ──────────────────────────────────────── */
+.glass {
+  background: rgba(17, 17, 17, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 240, 232, 0.06);
+}
+
+.glass-nav {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(245, 240, 232, 0.06);
+}
+
+/* ── CTA Buttons ────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F5F0E8;
+  color: #0A0A0A;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 1px solid #F5F0E8;
+}
+
+.btn-primary:hover {
+  background: #C9A96E;
+  border-color: #C9A96E;
+  color: #0A0A0A;
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #F5F0E8;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: 1px solid rgba(245, 240, 232, 0.4);
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.btn-outline:hover {
+  border-color: #C9A96E;
+  color: #C9A96E;
+  transform: translateY(-1px);
+}
+
+/* ── Section spacing ────────────────────────────────────── */
+.section-padding {
+  padding: 96px 24px;
+}
+
+@media (min-width: 768px) {
+  .section-padding { padding: 120px 48px; }
+}
+
+@media (min-width: 1280px) {
+  .section-padding { padding: 140px 80px; }
+}
+
+/* ── Gold divider line ──────────────────────────────────── */
+.gold-line {
+  width: 48px;
+  height: 1px;
+  background: #C9A96E;
+}
+
+/* ── Invitation preview phone frame ────────────────────── */
+.invite-phone-frame {
+  aspect-ratio: 9/16;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(245,240,232,0.08);
+}
+
+/* ── Lightbox ───────────────────────────────────────────── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

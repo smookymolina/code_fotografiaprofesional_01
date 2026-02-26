@@ -1,0 +1,99 @@
+import { motion } from 'framer-motion'
+import { useInView } from './useInView'
+import { Instagram, ArrowUp } from 'lucide-react'
+
+const navCols = [
+  {
+    heading: 'Servicios',
+    links: ['Bodas & Celebraciones', 'Eventos Corporativos', 'Retratos & Sesiones', 'XV Años & Graduaciones', 'Fotografía Editorial', 'Video + Foto Combo'],
+  },
+  {
+    heading: 'Estudio',
+    links: ['Portfolio', 'Eventos Realizados', 'Sobre Mí', 'Invitaciones Digitales', 'Testimoniales'],
+  },
+  {
+    heading: 'Contacto',
+    links: ['hola@studiolumiere.mx', '+52 55 1234 5678', 'CDMX, México', 'Reservar Sesión'],
+  },
+]
+
+export default function Footer() {
+  const { ref, inView } = useInView()
+
+  return (
+    <footer
+      className="bg-black border-t border-ivory/6"
+      ref={ref as React.RefObject<HTMLElement>}
+    >
+      <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 pb-10">
+        <div className="grid md:grid-cols-[1fr_2fr] gap-16 mb-16">
+          {/* Brand */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+          >
+            <h3 className="font-cormorant italic text-ivory text-3xl font-light mb-4">
+              Studio <span className="not-italic font-semibold">Lumière</span>
+            </h3>
+            <p className="font-dm text-ivory/35 text-sm leading-relaxed mb-6 max-w-[280px]">
+              Capturamos los momentos que definen tu historia. Fotografía profesional en Ciudad de México y toda la República.
+            </p>
+            <div className="flex gap-3">
+              <a
+                href="#"
+                className="w-9 h-9 border border-ivory/10 flex items-center justify-center text-ivory/40 hover:text-ivory hover:border-ivory/40 transition-all"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Nav columns */}
+          <div className="grid sm:grid-cols-3 gap-10">
+            {navCols.map((col, i) => (
+              <motion.div
+                key={col.heading}
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.7, delay: i * 0.1 }}
+              >
+                <p className="label-caps text-gold text-[0.6rem] mb-5">{col.heading}</p>
+                <ul className="space-y-3">
+                  {col.links.map(link => (
+                    <li key={link}>
+                      <a
+                        href="#"
+                        className="font-dm text-ivory/35 text-xs hover:text-ivory/70 transition-colors"
+                      >
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-ivory/6 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="font-dm text-ivory/20 text-xs">
+            © 2024 Studio Lumière. Todos los derechos reservados.
+          </p>
+          <p className="font-dm text-ivory/15 text-xs">
+            Fotografía Profesional · Ciudad de México
+          </p>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-9 h-9 border border-ivory/10 flex items-center justify-center text-ivory/30 hover:text-ivory hover:border-ivory/40 transition-all"
+            aria-label="Back to top"
+          >
+            <ArrowUp className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </footer>
+  )
+}
