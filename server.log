@@ -1,0 +1,104 @@
+
+> studio-lumiere-api@1.0.0 dev
+> ts-node-dev --respawn --transpile-only src/server.ts
+
+[INFO] 19:14:37 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+
+🎯 Studio Lumière API
+🚀 Servidor corriendo en http://localhost:3001
+🌍 Ambiente: development
+📡 Frontend: http://localhost:5173
+📋 Health: http://localhost:3001/api/health
+
+[0mGET /api/health [32m200[0m 2.177 ms - 133[0m
+[ERROR] Bad escaped character in JSON at position 55 (line 1 column 56)
+SyntaxError: Bad escaped character in JSON at position 55 (line 1 column 56)
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\body-parser\lib\types\json.js:92:19)
+    at C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:508:28)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`password`, `main`.`users`.`name`, `main`.`users`.`phone`, `main`.`users`.`role`, `main`.`users`.`isActive`, `main`.`users`.`avatar`, `main`.`users`.`createdAt`, `main`.`users`.`updatedAt` FROM `main`.`users` WHERE (`main`.`users`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`refresh_tokens`.`id`, `main`.`refresh_tokens`.`token`, `main`.`refresh_tokens`.`userId`, `main`.`refresh_tokens`.`expiresAt`, `main`.`refresh_tokens`.`createdAt` FROM `main`.`refresh_tokens` WHERE `main`.`refresh_tokens`.`userId` = ? ORDER BY `main`.`refresh_tokens`.`createdAt` ASC LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`refresh_tokens` (`id`, `token`, `userId`, `expiresAt`, `createdAt`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `token` AS `token`, `userId` AS `userId`, `expiresAt` AS `expiresAt`, `createdAt` AS `createdAt`
+[0mPOST /api/auth/login [32m200[0m 295.891 ms - 840[0m
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`password`, `main`.`users`.`name`, `main`.`users`.`phone`, `main`.`users`.`role`, `main`.`users`.`isActive`, `main`.`users`.`avatar`, `main`.`users`.`createdAt`, `main`.`users`.`updatedAt` FROM `main`.`users` WHERE (`main`.`users`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`refresh_tokens`.`id`, `main`.`refresh_tokens`.`token`, `main`.`refresh_tokens`.`userId`, `main`.`refresh_tokens`.`expiresAt`, `main`.`refresh_tokens`.`createdAt` FROM `main`.`refresh_tokens` WHERE `main`.`refresh_tokens`.`userId` = ? ORDER BY `main`.`refresh_tokens`.`createdAt` ASC LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`refresh_tokens` (`id`, `token`, `userId`, `expiresAt`, `createdAt`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `token` AS `token`, `userId` AS `userId`, `expiresAt` AS `expiresAt`, `createdAt` AS `createdAt`
+[0mPOST /api/auth/login [32m200[0m 228.746 ms - 825[0m
+prisma:query SELECT 1
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`password`, `main`.`users`.`name`, `main`.`users`.`phone`, `main`.`users`.`role`, `main`.`users`.`isActive`, `main`.`users`.`avatar`, `main`.`users`.`createdAt`, `main`.`users`.`updatedAt` FROM `main`.`users` WHERE (`main`.`users`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+[0mPOST /api/auth/login [33m401[0m 223.095 ms - 54[0m
+[ERROR] Bad escaped character in JSON at position 55 (line 1 column 56)
+SyntaxError: Bad escaped character in JSON at position 55 (line 1 column 56)
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\body-parser\lib\types\json.js:92:19)
+    at C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:508:28)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[0mGET /api/auth/me [33m401[0m 0.289 ms - 55[0m
+[ERROR] Bad escaped character in JSON at position 55 (line 1 column 56)
+SyntaxError: Bad escaped character in JSON at position 55 (line 1 column 56)
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\body-parser\lib\types\json.js:92:19)
+    at C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\Admin\OneDrive\Documents\GitHub\code_fotografiaprofesional_01\server\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:508:28)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[0mGET /api/auth/me [33m401[0m 0.247 ms - 55[0m
+[0mGET /api/admin/dashboard [33m401[0m 0.178 ms - 55[0m
+prisma:query SELECT 1
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`password`, `main`.`users`.`name`, `main`.`users`.`phone`, `main`.`users`.`role`, `main`.`users`.`isActive`, `main`.`users`.`avatar`, `main`.`users`.`createdAt`, `main`.`users`.`updatedAt` FROM `main`.`users` WHERE (`main`.`users`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`refresh_tokens`.`id`, `main`.`refresh_tokens`.`token`, `main`.`refresh_tokens`.`userId`, `main`.`refresh_tokens`.`expiresAt`, `main`.`refresh_tokens`.`createdAt` FROM `main`.`refresh_tokens` WHERE `main`.`refresh_tokens`.`userId` = ? ORDER BY `main`.`refresh_tokens`.`createdAt` ASC LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`refresh_tokens` (`id`, `token`, `userId`, `expiresAt`, `createdAt`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `token` AS `token`, `userId` AS `userId`, `expiresAt` AS `expiresAt`, `createdAt` AS `createdAt`
+[0mPOST /api/auth/login [32m200[0m 227.432 ms - 840[0m
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`name`, `main`.`users`.`role`, `main`.`users`.`phone`, `main`.`users`.`avatar`, `main`.`users`.`createdAt` FROM `main`.`users` WHERE (`main`.`users`.`id` = ? AND 1=1) LIMIT ? OFFSET ?
+[0mGET /api/auth/me [32m200[0m 2.711 ms - 231[0m
+prisma:query SELECT `main`.`contact_requests`.`id`, `main`.`contact_requests`.`name`, `main`.`contact_requests`.`email`, `main`.`contact_requests`.`phone`, `main`.`contact_requests`.`eventDate`, `main`.`contact_requests`.`service`, `main`.`contact_requests`.`message`, `main`.`contact_requests`.`status`, `main`.`contact_requests`.`notes`, `main`.`contact_requests`.`createdAt`, `main`.`contact_requests`.`updatedAt` FROM `main`.`contact_requests` WHERE 1=1 ORDER BY `main`.`contact_requests`.`createdAt` DESC LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`bookings`.`id`, `main`.`bookings`.`clientId`, `main`.`bookings`.`service`, `main`.`bookings`.`eventDate`, `main`.`bookings`.`eventType`, `main`.`bookings`.`venue`, `main`.`bookings`.`guestCount`, `main`.`bookings`.`budget`, `main`.`bookings`.`status`, `main`.`bookings`.`notes`, `main`.`bookings`.`adminNotes`, `main`.`bookings`.`totalPrice`, `main`.`bookings`.`depositPaid`, `main`.`bookings`.`createdAt`, `main`.`bookings`.`updatedAt` FROM `main`.`bookings` WHERE 1=1 ORDER BY `main`.`bookings`.`createdAt` DESC LIMIT ? OFFSET ?
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`users`.`id` FROM `main`.`users` WHERE `main`.`users`.`role` = ? LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`portfolio_items`.`id` FROM `main`.`portfolio_items` WHERE 1=1 LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`contact_requests`.`id` FROM `main`.`contact_requests` WHERE 1=1 LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`bookings`.`id` FROM `main`.`bookings` WHERE `main`.`bookings`.`status` = ? LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`bookings`.`id` FROM `main`.`bookings` WHERE 1=1 LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`contact_requests`.`id` FROM `main`.`contact_requests` WHERE `main`.`contact_requests`.`status` = ? LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`bookings`.`id` FROM `main`.`bookings` WHERE `main`.`bookings`.`status` = ? LIMIT ? OFFSET ?) AS `sub`
+[0mGET /api/admin/dashboard [32m200[0m 68.827 ms - 616[0m
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`password`, `main`.`users`.`name`, `main`.`users`.`phone`, `main`.`users`.`role`, `main`.`users`.`isActive`, `main`.`users`.`avatar`, `main`.`users`.`createdAt`, `main`.`users`.`updatedAt` FROM `main`.`users` WHERE (`main`.`users`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`refresh_tokens`.`id`, `main`.`refresh_tokens`.`token`, `main`.`refresh_tokens`.`userId`, `main`.`refresh_tokens`.`expiresAt`, `main`.`refresh_tokens`.`createdAt` FROM `main`.`refresh_tokens` WHERE `main`.`refresh_tokens`.`userId` = ? ORDER BY `main`.`refresh_tokens`.`createdAt` ASC LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`refresh_tokens` (`id`, `token`, `userId`, `expiresAt`, `createdAt`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `token` AS `token`, `userId` AS `userId`, `expiresAt` AS `expiresAt`, `createdAt` AS `createdAt`
+[0mPOST /api/auth/login [32m200[0m 226.883 ms - 840[0m
+prisma:query SELECT `main`.`users`.`id`, `main`.`users`.`email`, `main`.`users`.`password`, `main`.`users`.`name`, `main`.`users`.`phone`, `main`.`users`.`role`, `main`.`users`.`isActive`, `main`.`users`.`avatar`, `main`.`users`.`createdAt`, `main`.`users`.`updatedAt` FROM `main`.`users` WHERE (`main`.`users`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`refresh_tokens`.`id`, `main`.`refresh_tokens`.`token`, `main`.`refresh_tokens`.`userId`, `main`.`refresh_tokens`.`expiresAt`, `main`.`refresh_tokens`.`createdAt` FROM `main`.`refresh_tokens` WHERE `main`.`refresh_tokens`.`userId` = ? ORDER BY `main`.`refresh_tokens`.`createdAt` ASC LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`refresh_tokens` (`id`, `token`, `userId`, `expiresAt`, `createdAt`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `token` AS `token`, `userId` AS `userId`, `expiresAt` AS `expiresAt`, `createdAt` AS `createdAt`
+[0mPOST /api/auth/login [32m200[0m 225.254 ms - 825[0m
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`bookings`.`id` FROM `main`.`bookings` WHERE 1=1 LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`contact_requests`.`id` FROM `main`.`contact_requests` WHERE 1=1 LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`bookings`.`id` FROM `main`.`bookings` WHERE `main`.`bookings`.`status` = ? LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`contact_requests`.`id` FROM `main`.`contact_requests` WHERE `main`.`contact_requests`.`status` = ? LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`users`.`id` FROM `main`.`users` WHERE `main`.`users`.`role` = ? LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT `main`.`contact_requests`.`id`, `main`.`contact_requests`.`name`, `main`.`contact_requests`.`email`, `main`.`contact_requests`.`phone`, `main`.`contact_requests`.`eventDate`, `main`.`contact_requests`.`service`, `main`.`contact_requests`.`message`, `main`.`contact_requests`.`status`, `main`.`contact_requests`.`notes`, `main`.`contact_requests`.`createdAt`, `main`.`contact_requests`.`updatedAt` FROM `main`.`contact_requests` WHERE 1=1 ORDER BY `main`.`contact_requests`.`createdAt` DESC LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`bookings`.`id`, `main`.`bookings`.`clientId`, `main`.`bookings`.`service`, `main`.`bookings`.`eventDate`, `main`.`bookings`.`eventType`, `main`.`bookings`.`venue`, `main`.`bookings`.`guestCount`, `main`.`bookings`.`budget`, `main`.`bookings`.`status`, `main`.`bookings`.`notes`, `main`.`bookings`.`adminNotes`, `main`.`bookings`.`totalPrice`, `main`.`bookings`.`depositPaid`, `main`.`bookings`.`createdAt`, `main`.`bookings`.`updatedAt` FROM `main`.`bookings` WHERE 1=1 ORDER BY `main`.`bookings`.`createdAt` DESC LIMIT ? OFFSET ?
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`portfolio_items`.`id` FROM `main`.`portfolio_items` WHERE 1=1 LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT COUNT(*) FROM (SELECT `main`.`bookings`.`id` FROM `main`.`bookings` WHERE `main`.`bookings`.`status` = ? LIMIT ? OFFSET ?) AS `sub`
+[0mGET /api/admin/dashboard [32m200[0m 24.773 ms - 616[0m
+[0mGET /api/admin/dashboard [33m403[0m 0.305 ms - 75[0m
+prisma:query SELECT `main`.`bookings`.`id`, `main`.`bookings`.`clientId`, `main`.`bookings`.`service`, `main`.`bookings`.`eventDate`, `main`.`bookings`.`eventType`, `main`.`bookings`.`venue`, `main`.`bookings`.`guestCount`, `main`.`bookings`.`budget`, `main`.`bookings`.`status`, `main`.`bookings`.`notes`, `main`.`bookings`.`adminNotes`, `main`.`bookings`.`totalPrice`, `main`.`bookings`.`depositPaid`, `main`.`bookings`.`createdAt`, `main`.`bookings`.`updatedAt` FROM `main`.`bookings` WHERE `main`.`bookings`.`clientId` = ? ORDER BY `main`.`bookings`.`createdAt` DESC LIMIT ? OFFSET ?
+[0mGET /api/client/bookings [32m200[0m 0.923 ms - 41[0m
+prisma:query SELECT `main`.`bookings`.`id`, `main`.`bookings`.`clientId`, `main`.`bookings`.`service`, `main`.`bookings`.`eventDate`, `main`.`bookings`.`eventType`, `main`.`bookings`.`venue`, `main`.`bookings`.`guestCount`, `main`.`bookings`.`budget`, `main`.`bookings`.`status`, `main`.`bookings`.`notes`, `main`.`bookings`.`adminNotes`, `main`.`bookings`.`totalPrice`, `main`.`bookings`.`depositPaid`, `main`.`bookings`.`createdAt`, `main`.`bookings`.`updatedAt` FROM `main`.`bookings` WHERE `main`.`bookings`.`clientId` = ? ORDER BY `main`.`bookings`.`createdAt` DESC LIMIT ? OFFSET ?
+[0mGET /api/client/bookings [32m200[0m 0.632 ms - 41[0m
+[0mGET /api/auth/me [33m401[0m 0.110 ms - 55[0m

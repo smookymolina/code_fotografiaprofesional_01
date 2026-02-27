@@ -5,7 +5,15 @@
       "Bash(npm install:*)",
       "Bash(mkdir:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(claude install:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(powershell.exe:*)",
+      "Bash(\"$HOME/.local/bin/claude.exe\":*)",
+      "Bash(npx prisma:*)",
+      "Bash(npx ts-node:*)"
     ]
   }
 }

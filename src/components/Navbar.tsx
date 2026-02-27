@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { User, LayoutDashboard, LogOut } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import LoginModal from './LoginModal'
 
 const navLinks = [
   { label: 'Inicio', href: '#inicio' },
@@ -11,9 +14,12 @@ const navLinks = [
 ]
 
 export default function Navbar() {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [active, setActive] = useState('#inicio')
+  const [showLogin, setShowLogin] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
@@ -76,8 +82,55 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:block">
+          {/* Desktop CTA + Auth */}
+          <div className="hidden lg:flex items-center gap-3">
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 text-ivory/70 hover:text-ivory transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center">
+                    <span className="text-gold text-xs font-semibold">{user?.name?.[0]}</span>
+                  </div>
+                  <span className="font-dm text-sm">{user?.name?.split(' ')[0]}</span>
+                </button>
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      className="absolute right-0 mt-2 w-44 glass-nav rounded-xl border border-white/10 overflow-hidden shadow-xl"
+                      onMouseLeave={() => setUserMenuOpen(false)}
+                    >
+                      <a
+                        href={isAdmin ? '/admin' : '/cliente'}
+                        className="flex items-center gap-3 px-4 py-3 text-ivory/70 hover:text-ivory hover:bg-white/5 transition-colors font-dm text-sm"
+                      >
+                        <LayoutDashboard size={15} />
+                        {isAdmin ? 'Panel Admin' : 'Mi Portal'}
+                      </a>
+                      <button
+                        onClick={() => { logout(); setUserMenuOpen(false) }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-ivory/50 hover:text-danger hover:bg-danger/10 transition-colors font-dm text-sm"
+                      >
+                        <LogOut size={15} />
+                        Cerrar sesión
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowLogin(true)}
+                className="flex items-center gap-2 text-ivory/60 hover:text-ivory transition-colors font-dm text-sm"
+              >
+                <User size={16} />
+                Ingresar
+              </button>
+            )}
             <button
               onClick={() => handleLink('#contacto')}
               className="btn-outline text-xs py-3 px-6"
@@ -142,10 +195,25 @@ export default function Navbar() {
               >
                 Reservar Sesión
               </motion.button>
+              {!isAuthenticated && (
+                <motion.button
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: navLinks.length * 0.07 + 0.2 }}
+                  onClick={() => { setMenuOpen(false); setShowLogin(true) }}
+                  className="flex items-center gap-2 text-ivory/60 hover:text-ivory font-dm text-sm mt-2 transition-colors"
+                >
+                  <User size={16} />
+                  Iniciar Sesión
+                </motion.button>
+              )}
             </nav>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </>
   )
 }

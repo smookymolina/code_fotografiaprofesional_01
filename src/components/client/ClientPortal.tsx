@@ -1,0 +1,373 @@
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { CalendarDays, Mail, LogOut, Plus, Eye, Trash2, CheckCircle, Clock, XCircle, ExternalLink } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import api from '../../api/client'
+
+interface Booking {
+  id: string
+  service: string
+  eventDate: string
+  eventType: string
+  venue?: string
+  status: string
+  notes?: string
+  totalPrice?: number
+  createdAt: string
+}
+
+interface Invitation {
+  id: string
+  title: string
+  eventType: string
+  eventDate: string
+  template: string
+  views: number
+  isPublished: boolean
+  shareToken: string
+  createdAt: string
+}
+
+const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  PENDING:      { label: 'Pendiente',       icon: Clock,        color: 'text-yellow-400' },
+  CONFIRMED:    { label: 'Confirmado',      icon: CheckCircle,  color: 'text-green-400' },
+  DEPOSIT_PAID: { label: 'Depósito pagado', icon: CheckCircle,  color: 'text-teal-400' },
+  IN_PROGRESS:  { label: 'En progreso',     icon: Clock,        color: 'text-blue-400' },
+  COMPLETED:    { label: 'Completado',      icon: CheckCircle,  color: 'text-emerald-400' },
+  CANCELLED:    { label: 'Cancelado',       icon: XCircle,      color: 'text-red-400' },
+}
+
+type Tab = 'bookings' | 'invitations'
+
+export default function ClientPortal() {
+  const { user, logout } = useAuth()
+  const [tab, setTab] = useState<Tab>('bookings')
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [invitations, setInvitations] = useState<Invitation[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [showBookingForm, setShowBookingForm] = useState(false)
+
+  useEffect(() => {
+    if (tab === 'bookings') loadBookings()
+    if (tab === 'invitations') loadInvitations()
+  }, [tab])
+
+  async function loadBookings() {
+    setIsLoading(true)
+    try {
+      const res = await api.get<{ data: Booking[] }>('/client/bookings')
+      setBookings(res.data)
+    } finally { setIsLoading(false) }
+  }
+
+  async function loadInvitations() {
+    setIsLoading(true)
+    try {
+      const res = await api.get<{ data: Invitation[] }>('/client/invitations')
+      setInvitations(res.data)
+    } finally { setIsLoading(false) }
+  }
+
+  async function cancelBooking(id: string) {
+    if (!confirm('¿Cancelar esta reserva?')) return
+    try {
+      await api.patch(`/client/bookings/${id}/cancel`)
+      loadBookings()
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Error al cancelar')
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-near-black">
+      {/* Header */}
+      <header className="border-b border-white/5 px-6 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <p className="label-caps text-gold text-xs">Mi Cuenta</p>
+            <h1 className="font-cormorant text-xl text-ivory">{user?.name}</h1>
+            <p className="text-ivory/40 text-xs font-dm">{user?.email}</p>
+          </div>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 text-ivory/50 hover:text-ivory text-sm font-dm transition-colors"
+          >
+            <LogOut size={16} />
+            Salir
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        {/* Tabs */}
+        <div className="flex gap-2 border-b border-white/5 pb-0">
+          {([
+            { id: 'bookings', label: 'Mis Reservas', icon: CalendarDays },
+            { id: 'invitations', label: 'Mis Invitaciones', icon: Mail },
+          ] as const).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-dm border-b-2 -mb-px transition-colors ${
+                tab === id
+                  ? 'border-gold text-gold'
+                  : 'border-transparent text-ivory/50 hover:text-ivory'
+              }`}
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Bookings tab */}
+        {tab === 'bookings' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-ivory/50 text-sm font-dm">{bookings.length} reservas</p>
+              <button
+                onClick={() => setShowBookingForm(true)}
+                className="flex items-center gap-2 btn-primary px-4 py-2 text-sm"
+              >
+                <Plus size={16} />
+                Nueva reserva
+              </button>
+            </div>
+
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : bookings.length === 0 ? (
+              <div className="glass rounded-xl border border-white/5 p-12 text-center">
+                <CalendarDays className="mx-auto text-ivory/20 mb-4" size={40} />
+                <p className="text-ivory/40 font-dm">No tienes reservas aún</p>
+                <button
+                  onClick={() => setShowBookingForm(true)}
+                  className="btn-outline mt-4 px-6 py-2 text-sm"
+                >
+                  Hacer una reserva
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {bookings.map(b => {
+                  const cfg = STATUS_CONFIG[b.status] || STATUS_CONFIG['PENDING']
+                  const Icon = cfg.icon
+                  return (
+                    <motion.div
+                      key={b.id}
+                      className="glass rounded-xl border border-white/5 p-5"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-ivory font-dm font-medium">{b.service}</h3>
+                            <span className={`flex items-center gap-1 text-xs font-dm ${cfg.color}`}>
+                              <Icon size={12} />
+                              {cfg.label}
+                            </span>
+                          </div>
+                          <p className="text-ivory/50 text-sm font-dm">
+                            {b.eventType} · {new Date(b.eventDate).toLocaleDateString('es-MX', { dateStyle: 'long' })}
+                          </p>
+                          {b.venue && <p className="text-ivory/40 text-xs font-dm mt-1">{b.venue}</p>}
+                          {b.totalPrice && (
+                            <p className="text-gold text-sm font-dm mt-2">
+                              Total: ${b.totalPrice.toLocaleString('es-MX')} MXN
+                            </p>
+                          )}
+                        </div>
+                        {['PENDING', 'CONFIRMED'].includes(b.status) && (
+                          <button
+                            onClick={() => cancelBooking(b.id)}
+                            className="text-ivory/30 hover:text-danger transition-colors flex-shrink-0"
+                            title="Cancelar reserva"
+                          >
+                            <XCircle size={18} />
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Invitations tab */}
+        {tab === 'invitations' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-ivory/50 text-sm font-dm">{invitations.length} invitaciones</p>
+            </div>
+
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : invitations.length === 0 ? (
+              <div className="glass rounded-xl border border-white/5 p-12 text-center">
+                <Mail className="mx-auto text-ivory/20 mb-4" size={40} />
+                <p className="text-ivory/40 font-dm">No tienes invitaciones digitales</p>
+                <p className="text-ivory/30 text-sm font-dm mt-2">Crea una en la sección de Invitaciones del sitio</p>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {invitations.map(inv => (
+                  <motion.div
+                    key={inv.id}
+                    className="glass rounded-xl border border-white/5 p-5"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-ivory font-dm font-medium">{inv.title}</h3>
+                        <p className="text-ivory/50 text-sm font-dm mt-0.5">{inv.eventType} · {inv.eventDate}</p>
+                      </div>
+                      <span className={`text-xs font-dm px-2 py-1 rounded-full ${
+                        inv.isPublished ? 'bg-green-400/10 text-green-400' : 'bg-gray-400/10 text-gray-400'
+                      }`}>
+                        {inv.isPublished ? 'Publicada' : 'Borrador'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-4 text-xs font-dm text-ivory/40">
+                      <span className="flex items-center gap-1"><Eye size={12} /> {inv.views} vistas</span>
+                      <a
+                        href={`/invitacion/${inv.shareToken}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-gold hover:text-gold-light ml-auto"
+                      >
+                        Ver <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Booking form modal */}
+        {showBookingForm && (
+          <BookingForm
+            onClose={() => setShowBookingForm(false)}
+            onSuccess={() => { setShowBookingForm(false); loadBookings() }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BookingForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [form, setForm] = useState({
+    service: '',
+    eventDate: '',
+    eventType: '',
+    venue: '',
+    guestCount: '',
+    notes: '',
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const services = ['Bodas & Celebraciones', 'Eventos Corporativos', 'Retratos & Sesiones', 'XV Años & Graduaciones', 'Fotografía Editorial', 'Video + Foto Combo']
+  const eventTypes = ['Boda', 'XV Años', 'Cumpleaños', 'Graduación', 'Corporativo', 'Sesión de retratos', 'Otro']
+
+  const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm(prev => ({ ...prev, [field]: e.target.value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
+    try {
+      await api.post('/client/bookings', form)
+      onSuccess()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al crear la reserva')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <motion.div
+        className="w-full max-w-lg glass rounded-2xl p-6 border border-white/10 max-h-[90vh] overflow-y-auto"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-cormorant text-xl text-ivory">Nueva Reserva</h3>
+          <button onClick={onClose} className="text-ivory/40 hover:text-ivory">✕</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {[
+            { label: 'Servicio', field: 'service', type: 'select', options: services },
+            { label: 'Tipo de evento', field: 'eventType', type: 'select', options: eventTypes },
+            { label: 'Fecha del evento', field: 'eventDate', type: 'date' },
+            { label: 'Lugar del evento', field: 'venue', type: 'text', placeholder: 'Hacienda San Miguel...' },
+            { label: 'Número de invitados', field: 'guestCount', type: 'number', placeholder: '150' },
+          ].map(({ label, field, type, options, placeholder }) => (
+            <div key={field}>
+              <label className="block text-ivory/60 text-xs font-dm mb-1.5">{label}</label>
+              {type === 'select' ? (
+                <select
+                  value={form[field as keyof typeof form]}
+                  onChange={set(field)}
+                  required={['service', 'eventType', 'eventDate'].includes(field)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-ivory text-sm focus:border-gold/50 focus:outline-none"
+                >
+                  <option value="">Seleccionar...</option>
+                  {options?.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              ) : (
+                <input
+                  type={type}
+                  value={form[field as keyof typeof form]}
+                  onChange={set(field)}
+                  placeholder={placeholder}
+                  required={['service', 'eventType', 'eventDate'].includes(field)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-ivory text-sm placeholder-ivory/30 focus:border-gold/50 focus:outline-none"
+                />
+              )}
+            </div>
+          ))}
+
+          <div>
+            <label className="block text-ivory/60 text-xs font-dm mb-1.5">Notas adicionales</label>
+            <textarea
+              value={form.notes}
+              onChange={set('notes')}
+              placeholder="Cuéntanos más sobre tu evento..."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-ivory text-sm placeholder-ivory/30 focus:border-gold/50 focus:outline-none resize-none"
+            />
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-4 py-2 text-center">{error}</p>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-outline flex-1 py-2.5 text-sm">
+              Cancelar
+            </button>
+            <button type="submit" disabled={isLoading} className="btn-primary flex-1 py-2.5 text-sm">
+              {isLoading ? 'Enviando...' : 'Crear Reserva'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
