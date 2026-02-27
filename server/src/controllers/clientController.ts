@@ -6,6 +6,30 @@ import { AuthRequest } from '../types'
 import * as R from '../utils/response'
 import { sendBookingConfirmation } from '../utils/email'
 
+function parseGallery(raw?: string | null): string[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function normalizeInvitation(invitation: any) {
+  return {
+    ...invitation,
+    gallery: parseGallery(invitation.gallery),
+  }
+}
+
+function serializeGallery(input: unknown): string | undefined {
+  if (!input) return undefined
+  if (Array.isArray(input)) return JSON.stringify(input)
+  if (typeof input === 'string') return input
+  return undefined
+}
+
 // ─── RESERVAS DEL CLIENTE ──────────────────────────────────────────────────────
 
 export async function getMyBookings(req: AuthRequest, res: Response): Promise<void> {
@@ -84,7 +108,7 @@ export async function getMyInvitations(req: AuthRequest, res: Response): Promise
     where: { clientId: req.user!.userId },
     orderBy: { createdAt: 'desc' },
   })
-  R.success(res, invitations)
+  R.success(res, invitations.map(normalizeInvitation))
 }
 
 export async function getMyInvitation(req: AuthRequest, res: Response): Promise<void> {
@@ -92,7 +116,7 @@ export async function getMyInvitation(req: AuthRequest, res: Response): Promise<
     where: { id: req.params.id, clientId: req.user!.userId },
   })
   if (!invitation) { R.notFound(res, 'Invitación no encontrada'); return }
-  R.success(res, invitation)
+  R.success(res, normalizeInvitation(invitation))
 }
 
 export async function createInvitation(req: AuthRequest, res: Response): Promise<void> {
@@ -103,26 +127,33 @@ export async function createInvitation(req: AuthRequest, res: Response): Promise
   }
 
   const {
-    eventType, title, names, eventDate, eventTime, venue, message,
-    template, primaryColor, textColor, fontStyle, isDark, dressCode, rsvpContact,
+    eventType, title, names, eventDate, eventTime, venue, locationNote,
+    message, quote, hashtag, template, primaryColor, textColor, fontStyle,
+    isDark, dressCode, rsvpLabel, rsvpValue, rsvpContact, gallery, isPublished,
   } = req.body
 
   const shareToken = uuidv4()
+  const resolvedRsvp = rsvpValue || rsvpContact
 
   const invitation = await prisma.digitalInvitation.create({
     data: {
       clientId: req.user!.userId,
-      eventType, title, names, eventDate, eventTime, venue, message,
+      eventType, title, names, eventDate, eventTime, venue, locationNote,
+      message, quote, hashtag,
       template: template || 'elegante',
       primaryColor: primaryColor || '#1a2744',
       textColor: textColor || '#F5F0E8',
       fontStyle: fontStyle || 'serif',
       isDark: isDark !== false,
-      dressCode, rsvpContact,
+      isPublished: isPublished !== false,
+      dressCode,
+      rsvpLabel,
+      rsvpValue: resolvedRsvp,
+      gallery: serializeGallery(gallery),
       shareToken,
     },
   })
-  R.created(res, invitation, 'Invitación creada exitosamente')
+  R.created(res, normalizeInvitation(invitation), 'Invitación creada exitosamente')
 }
 
 export async function updateInvitation(req: AuthRequest, res: Response): Promise<void> {
@@ -131,11 +162,19 @@ export async function updateInvitation(req: AuthRequest, res: Response): Promise
   })
   if (!existing) { R.notFound(res, 'Invitación no encontrada'); return }
 
+  const payload = { ...req.body }
+  if (payload.gallery) {
+    payload.gallery = serializeGallery(payload.gallery)
+  }
+  if (payload.rsvpContact && !payload.rsvpValue) {
+    payload.rsvpValue = payload.rsvpContact
+  }
+
   const invitation = await prisma.digitalInvitation.update({
     where: { id: req.params.id },
-    data: req.body,
+    data: payload,
   })
-  R.success(res, invitation, 'Invitación actualizada')
+  R.success(res, normalizeInvitation(invitation), 'Invitación actualizada')
 }
 
 export async function deleteInvitation(req: AuthRequest, res: Response): Promise<void> {
@@ -158,5 +197,21 @@ export async function toggleInvitationPublished(req: AuthRequest, res: Response)
     where: { id: req.params.id },
     data: { isPublished: !existing.isPublished },
   })
-  R.success(res, updated, `Invitación ${updated.isPublished ? 'publicada' : 'despublicada'}`)
+  R.success(res, normalizeInvitation(updated), `Invitación ${updated.isPublished ? 'publicada' : 'despublicada'}`)
+}
+
+export async function addInvitationPhotos(req: AuthRequest, res: Response): Promise<void> {
+  const existing = await prisma.digitalInvitation.findFirst({
+    where: { id: req.params.id, clientId: req.user!.userId },
+  })
+  if (!existing) { R.notFound(res, 'Invitación no encontrada'); return }
+
+  const files = (req.files || []) as Express.Multer.File[]
+  const urls = files.map(file => `/uploads/${file.filename}`)
+  const current = parseGallery(existing.gallery)
+  const updated = await prisma.digitalInvitation.update({
+    where: { id: existing.id },
+    data: { gallery: JSON.stringify([...current, ...urls]) },
+  })
+  R.success(res, normalizeInvitation(updated), 'Fotos agregadas')
 }

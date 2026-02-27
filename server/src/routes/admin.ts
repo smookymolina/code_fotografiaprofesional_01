@@ -44,6 +44,15 @@ router.get('/clients', admin.listClients)
 router.post('/clients', admin.createClient)
 router.patch('/clients/:id/toggle-status', admin.toggleClientStatus)
 
+// Invitaciones digitales
+router.get('/invitations', admin.listInvitations)
+router.get('/invitations/:id', admin.getInvitation)
+router.post('/invitations', admin.createInvitation)
+router.put('/invitations/:id', admin.updateInvitation)
+router.delete('/invitations/:id', admin.deleteInvitation)
+router.patch('/invitations/:id/toggle-published', admin.toggleInvitationPublished)
+router.post('/invitations/:id/photos', uploadImage.array('images', 8), admin.addInvitationPhotos)
+
 // Configuración del sitio
 router.get('/settings', admin.getSettings)
 router.put('/settings', admin.updateSettings)

@@ -8,11 +8,13 @@ import Portfolio from './components/Portfolio'
 import Events from './components/Events'
 import Services from './components/Services'
 import InvitationBuilder from './components/InvitationBuilder'
+import InvitationShowcase from './components/InvitationShowcase'
 import Testimonials from './components/Testimonials'
 import About from './components/About'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import CustomCursor from './components/CustomCursor'
+import InvitationPage from './components/invitations/InvitationPage'
 
 // Dashboards
 import AdminDashboard from './components/admin/AdminDashboard'
@@ -22,7 +24,6 @@ import ClientPortal from './components/client/ClientPortal'
 function MainSite() {
   return (
     <>
-      <CustomCursor />
       <Navbar />
       <main>
         <Hero />
@@ -30,6 +31,7 @@ function MainSite() {
         <Events />
         <Services />
         <InvitationBuilder />
+        <InvitationShowcase />
         <Testimonials />
         <About />
         <Contact />
@@ -70,8 +72,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <CustomCursor />
         <Routes>
           <Route path="/" element={<MainSite />} />
+          <Route path="/invitacion/:token" element={<InvitationPage />} />
           <Route path="/admin" element={<ProtectedAdmin />} />
           <Route path="/cliente" element={<ProtectedClient />} />
           <Route path="*" element={<Navigate to="/" replace />} />

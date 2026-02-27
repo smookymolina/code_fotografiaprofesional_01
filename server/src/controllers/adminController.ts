@@ -1,8 +1,33 @@
 import { Response } from 'express'
 import prisma from '../utils/prisma'
+import { v4 as uuidv4 } from 'uuid'
 import { hashPassword } from '../utils/password'
 import { AuthRequest } from '../types'
 import * as R from '../utils/response'
+
+function parseGallery(raw?: string | null): string[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function normalizeInvitation(invitation: any) {
+  return {
+    ...invitation,
+    gallery: parseGallery(invitation.gallery),
+  }
+}
+
+function serializeGallery(input: unknown): string | undefined {
+  if (!input) return undefined
+  if (Array.isArray(input)) return JSON.stringify(input)
+  if (typeof input === 'string') return input
+  return undefined
+}
 
 // ─── DASHBOARD ─────────────────────────────────────────────────────────────────
 
@@ -256,6 +281,105 @@ export async function toggleClientStatus(req: AuthRequest, res: Response): Promi
 }
 
 // ─── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
+
+// Invitaciones digitales
+
+export async function listInvitations(req: AuthRequest, res: Response): Promise<void> {
+  const page = Math.max(1, Number(req.query.page) || 1)
+  const limit = Math.min(50, Number(req.query.limit) || 10)
+  const skip = (page - 1) * limit
+
+  const [items, total] = await Promise.all([
+    prisma.digitalInvitation.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { client: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.digitalInvitation.count(),
+  ])
+  R.paginate(res, items.map(normalizeInvitation), total, page, limit)
+}
+
+export async function getInvitation(req: AuthRequest, res: Response): Promise<void> {
+  const item = await prisma.digitalInvitation.findUnique({
+    where: { id: req.params.id },
+    include: { client: { select: { id: true, name: true, email: true } } },
+  })
+  if (!item) { R.notFound(res); return }
+  R.success(res, normalizeInvitation(item))
+}
+
+export async function createInvitation(req: AuthRequest, res: Response): Promise<void> {
+  const {
+    clientId, eventType, title, names, eventDate, eventTime, venue, locationNote,
+    message, quote, hashtag, template, primaryColor, textColor, fontStyle,
+    isDark, dressCode, rsvpLabel, rsvpValue, gallery, isPublished,
+  } = req.body
+
+  const shareToken = uuidv4()
+  const invitation = await prisma.digitalInvitation.create({
+    data: {
+      clientId,
+      eventType, title, names, eventDate, eventTime, venue, locationNote,
+      message, quote, hashtag,
+      template: template || 'elegante',
+      primaryColor: primaryColor || '#1a2744',
+      textColor: textColor || '#F5F0E8',
+      fontStyle: fontStyle || 'serif',
+      isDark: isDark !== false,
+      isPublished: isPublished !== false,
+      dressCode,
+      rsvpLabel,
+      rsvpValue,
+      gallery: serializeGallery(gallery),
+      shareToken,
+    },
+  })
+  R.created(res, normalizeInvitation(invitation))
+}
+
+export async function updateInvitation(req: AuthRequest, res: Response): Promise<void> {
+  const payload = { ...req.body }
+  if (payload.gallery) {
+    payload.gallery = serializeGallery(payload.gallery)
+  }
+
+  const invitation = await prisma.digitalInvitation.update({
+    where: { id: req.params.id },
+    data: payload,
+  })
+  R.success(res, normalizeInvitation(invitation))
+}
+
+export async function deleteInvitation(req: AuthRequest, res: Response): Promise<void> {
+  await prisma.digitalInvitation.delete({ where: { id: req.params.id } })
+  R.noContent(res)
+}
+
+export async function toggleInvitationPublished(req: AuthRequest, res: Response): Promise<void> {
+  const existing = await prisma.digitalInvitation.findUnique({ where: { id: req.params.id } })
+  if (!existing) { R.notFound(res); return }
+  const updated = await prisma.digitalInvitation.update({
+    where: { id: req.params.id },
+    data: { isPublished: !existing.isPublished },
+  })
+  R.success(res, normalizeInvitation(updated))
+}
+
+export async function addInvitationPhotos(req: AuthRequest, res: Response): Promise<void> {
+  const existing = await prisma.digitalInvitation.findUnique({ where: { id: req.params.id } })
+  if (!existing) { R.notFound(res); return }
+
+  const files = (req.files || []) as Express.Multer.File[]
+  const urls = files.map(file => `/uploads/${file.filename}`)
+  const current = parseGallery(existing.gallery)
+  const updated = await prisma.digitalInvitation.update({
+    where: { id: existing.id },
+    data: { gallery: JSON.stringify([...current, ...urls]) },
+  })
+  R.success(res, normalizeInvitation(updated))
+}
 
 export async function getSettings(_req: AuthRequest, res: Response): Promise<void> {
   const settings = await prisma.siteSettings.upsert({

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CalendarDays, Mail, LogOut, Plus, Eye, Trash2, CheckCircle, Clock, XCircle, ExternalLink } from 'lucide-react'
+import { CalendarDays, Mail, LogOut, Plus, Eye, CheckCircle, Clock, XCircle, ExternalLink } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
+import InvitationWizard from '../invitations/InvitationWizard'
+import { ApiInvitation } from '../invitations/invitationTypes'
 
 interface Booking {
   id: string
@@ -16,17 +18,7 @@ interface Booking {
   createdAt: string
 }
 
-interface Invitation {
-  id: string
-  title: string
-  eventType: string
-  eventDate: string
-  template: string
-  views: number
-  isPublished: boolean
-  shareToken: string
-  createdAt: string
-}
+type InvitationItem = ApiInvitation
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   PENDING:      { label: 'Pendiente',       icon: Clock,        color: 'text-yellow-400' },
@@ -43,9 +35,10 @@ export default function ClientPortal() {
   const { user, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('bookings')
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [invitations, setInvitations] = useState<Invitation[]>([])
+  const [invitations, setInvitations] = useState<InvitationItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showBookingForm, setShowBookingForm] = useState(false)
+  const [showInvitationWizard, setShowInvitationWizard] = useState(false)
 
   useEffect(() => {
     if (tab === 'bookings') loadBookings()
@@ -63,7 +56,7 @@ export default function ClientPortal() {
   async function loadInvitations() {
     setIsLoading(true)
     try {
-      const res = await api.get<{ data: Invitation[] }>('/client/invitations')
+      const res = await api.get<{ data: InvitationItem[] }>('/client/invitations')
       setInvitations(res.data)
     } finally { setIsLoading(false) }
   }
@@ -202,7 +195,16 @@ export default function ClientPortal() {
         {tab === 'invitations' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <p className="text-ivory/50 text-sm font-dm">{invitations.length} invitaciones</p>
+              <p className="text-ivory/50 text-sm font-dm">
+                {invitations.length} invitaciones
+              </p>
+              <button
+                onClick={() => setShowInvitationWizard(true)}
+                className="flex items-center gap-2 btn-primary px-4 py-2 text-sm"
+              >
+                <Plus size={16} />
+                Crear invitacion
+              </button>
             </div>
 
             {isLoading ? (
@@ -258,6 +260,19 @@ export default function ClientPortal() {
           <BookingForm
             onClose={() => setShowBookingForm(false)}
             onSuccess={() => { setShowBookingForm(false); loadBookings() }}
+          />
+        )}
+
+        {showInvitationWizard && (
+          <InvitationWizard
+            onClose={() => setShowInvitationWizard(false)}
+            onSave={() => {
+              loadInvitations()
+              setShowInvitationWizard(false)
+            }}
+            ownerName={user?.name}
+            ownerEmail={user?.email}
+            mode="client"
           />
         )}
       </div>

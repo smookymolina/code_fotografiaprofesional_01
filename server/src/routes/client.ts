@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { body } from 'express-validator'
 import { authenticate } from '../middleware/auth'
 import { requireClient } from '../middleware/roles'
+import { uploadImage } from '../middleware/upload'
 import * as client from '../controllers/clientController'
 
 const router = Router()
@@ -35,5 +36,6 @@ router.post('/invitations', invitationValidation, client.createInvitation)
 router.put('/invitations/:id', client.updateInvitation)
 router.delete('/invitations/:id', client.deleteInvitation)
 router.patch('/invitations/:id/toggle-published', client.toggleInvitationPublished)
+router.post('/invitations/:id/photos', uploadImage.array('images', 8), client.addInvitationPhotos)
 
 export default router

@@ -4,6 +4,16 @@ import * as R from '../utils/response'
 
 const router = Router()
 
+function parseGallery(raw?: string | null): string[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 // GET /api/public/portfolio
 router.get('/portfolio', async (req, res) => {
   const { category, featured } = req.query
@@ -60,7 +70,7 @@ router.get('/invitation/:token', async (req, res) => {
     where: { id: invitation.id },
     data: { views: { increment: 1 } },
   })
-  R.success(res, invitation)
+  R.success(res, { ...invitation, gallery: parseGallery(invitation.gallery) })
 })
 
 export default router

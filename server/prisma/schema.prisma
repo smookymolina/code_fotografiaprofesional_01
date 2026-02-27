@@ -145,14 +145,19 @@ model DigitalInvitation {
   eventDate    String
   eventTime    String?
   venue        String?
+  locationNote String?
   message      String?
+  quote        String?
+  hashtag      String?
   template     String   @default("elegante")
   primaryColor String   @default("#1a2744")
   textColor    String   @default("#F5F0E8")
   fontStyle    String   @default("serif")
   isDark       Boolean  @default(true)
   dressCode    String?
-  rsvpContact  String?
+  rsvpLabel    String?
+  rsvpValue    String?
+  gallery      String?  // JSON array de URLs
   shareToken   String   @unique @default(cuid())
   views        Int      @default(0)
   isPublished  Boolean  @default(true)

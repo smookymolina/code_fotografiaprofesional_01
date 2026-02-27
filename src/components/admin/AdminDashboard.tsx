@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
-  LayoutDashboard, MessageSquare, CalendarDays, Image, Star,
-  Users, Settings, LogOut, ChevronRight, Clock, CheckCircle,
-  XCircle, TrendingUp, Menu, X
+  LayoutDashboard, MessageSquare, CalendarDays, Image,
+  Users, Settings, LogOut, Clock, CheckCircle,
+  XCircle, TrendingUp, Menu, Mail
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
+import AdminInvitations from './AdminInvitations'
 
 interface DashboardStats {
   totalContacts: number
@@ -50,7 +51,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   DEPOSIT_PAID:{ label: 'Depósito pagado', color: 'text-teal-400 bg-teal-400/10' },
 }
 
-type Section = 'dashboard' | 'contacts' | 'bookings' | 'portfolio' | 'clients' | 'settings'
+type Section = 'dashboard' | 'contacts' | 'bookings' | 'portfolio' | 'clients' | 'invitations' | 'settings'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -104,6 +105,7 @@ export default function AdminDashboard() {
     { id: 'bookings',  icon: CalendarDays,   label: 'Reservas',   badge: data?.stats.pendingBookings },
     { id: 'portfolio', icon: Image,          label: 'Portfolio' },
     { id: 'clients',   icon: Users,          label: 'Clientes' },
+    { id: 'invitations', icon: Mail,         label: 'Invitaciones' },
     { id: 'settings',  icon: Settings,       label: 'Configuración' },
   ]
 
@@ -196,6 +198,7 @@ export default function AdminDashboard() {
                   onUpdateStatus={updateContactStatus}
                 />
               )}
+              {section === 'invitations' && <AdminInvitations />}
               {['bookings', 'portfolio', 'clients', 'settings'].includes(section) && (
                 <ComingSoon section={section} />
               )}

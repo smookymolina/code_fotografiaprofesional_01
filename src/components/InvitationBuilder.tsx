@@ -4,7 +4,7 @@ import { useInView } from './useInView'
 import { Download, MessageCircle, Link, ChevronDown, ArrowRight } from 'lucide-react'
 
 type Tab = 'estilo' | 'texto' | 'colores'
-type Template = 'elegante' | 'moderno' | 'romantico' | 'festivo'
+type Template = 'warm' | 'moderno' | 'floral' | 'rustic'
 type EventType = 'Boda' | 'XV Años' | 'Cumpleaños' | 'Bautizo' | 'Graduación' | 'Corporativo'
 type PrimaryColor = 'navy' | 'black' | 'gold' | 'rose' | 'emerald' | 'burgundy'
 type TextColor = 'ivory' | 'white' | 'black'
@@ -23,11 +23,41 @@ interface InviteData {
   showRsvp: boolean
 }
 
-const templates: { id: Template; label: string; desc: string; gradient: string }[] = [
-  { id: 'elegante', label: 'Elegante', desc: 'Floral oscuro, bordes dorados', gradient: 'linear-gradient(135deg, #1a1209 0%, #2d1a08 50%, #1a1510 100%)' },
-  { id: 'moderno', label: 'Moderno', desc: 'Geométrico minimalista', gradient: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #111 100%)' },
-  { id: 'romantico', label: 'Romántico', desc: 'Tonos cálidos, serif', gradient: 'linear-gradient(135deg, #1a0d12 0%, #2a1520 50%, #1a100e 100%)' },
-  { id: 'festivo', label: 'Festivo', desc: 'Vibrante, colores vivos', gradient: 'linear-gradient(135deg, #0a0d18 0%, #0f1525 50%, #0a0e18 100%)' },
+const templates: {
+  id: Template
+  label: string
+  desc: string
+  darkGradient: string
+  lightGradient: string
+}[] = [
+  {
+    id: 'warm',
+    label: 'Cálida',
+    desc: 'Cremas suaves, dorado miel',
+    darkGradient: 'linear-gradient(135deg, #3d2810 0%, #5a3a18 50%, #2d1c0a 100%)',
+    lightGradient: 'linear-gradient(135deg, #fdf6ee 0%, #f0e0c8 50%, #e8d5b8 100%)',
+  },
+  {
+    id: 'floral',
+    label: 'Floral',
+    desc: 'Rosa polvoso, romántico',
+    darkGradient: 'linear-gradient(135deg, #3d1a28 0%, #5a2538 50%, #2d1020 100%)',
+    lightGradient: 'linear-gradient(135deg, #fdf0f4 0%, #f4d8e8 50%, #ecc8dc 100%)',
+  },
+  {
+    id: 'rustic',
+    label: 'Rústica',
+    desc: 'Tierra oscura, detalles dorados',
+    darkGradient: 'linear-gradient(135deg, #1e1008 0%, #2d1a0a 50%, #1e1208 100%)',
+    lightGradient: 'linear-gradient(135deg, #f0e6d8 0%, #e0d0bc 50%, #d0bca0 100%)',
+  },
+  {
+    id: 'moderno',
+    label: 'Moderno',
+    desc: 'Navy elegante, minimalista',
+    darkGradient: 'linear-gradient(135deg, #08101e 0%, #0f1a30 50%, #08101e 100%)',
+    lightGradient: 'linear-gradient(135deg, #e8edf8 0%, #d0dcf0 50%, #c0cce8 100%)',
+  },
 ]
 
 const colorSwatches: { id: PrimaryColor; hex: string; label: string }[] = [
@@ -78,7 +108,7 @@ function InvitePreview({
   const tpl = templates.find(t => t.id === template)!
   const accent = primaryColorHex[primaryColor]
   const fg = textColorHex[textColor]
-  const bg = dark ? tpl.gradient : 'linear-gradient(135deg, #f5f0e8 0%, #e8e0d0 100%)'
+  const bg = dark ? tpl.darkGradient : tpl.lightGradient
   const font = fontMap[fontStyle]
 
   const eventTypeLabels: Record<EventType, string> = {
@@ -226,7 +256,7 @@ function InvitePreview({
 export default function InvitationBuilder() {
   const { ref, inView } = useInView()
   const [tab, setTab] = useState<Tab>('estilo')
-  const [template, setTemplate] = useState<Template>('elegante')
+  const [template, setTemplate] = useState<Template>('warm')
   const [primaryColor, setPrimaryColor] = useState<PrimaryColor>('gold')
   const [textColor, setTextColor] = useState<TextColor>('ivory')
   const [fontStyle, setFontStyle] = useState<FontStyle>('serif')
@@ -325,10 +355,10 @@ export default function InvitationBuilder() {
                             : 'border-ivory/10 hover:border-ivory/25'
                         }`}
                       >
-                        {/* Preview swatch */}
+                        {/* Preview swatch — muestra el gradiente real de la plantilla */}
                         <div
                           className="w-full h-16 rounded-sm mb-3"
-                          style={{ background: tpl.gradient }}
+                          style={{ background: dark ? tpl.darkGradient : tpl.lightGradient }}
                         />
                         <p className="font-dm text-ivory text-sm font-medium">{tpl.label}</p>
                         <p className="font-dm text-ivory/40 text-xs mt-0.5">{tpl.desc}</p>
