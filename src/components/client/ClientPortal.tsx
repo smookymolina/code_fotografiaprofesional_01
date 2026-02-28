@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CalendarDays, Mail, LogOut, Plus, Eye, CheckCircle, Clock, XCircle, ExternalLink } from 'lucide-react'
+import {
+  CalendarDays, Mail, LogOut, Plus, Eye, CheckCircle, Clock, XCircle,
+  ExternalLink, Pencil, Trash2, Copy, Check, ToggleLeft, ToggleRight,
+} from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
 import InvitationWizard from '../invitations/InvitationWizard'
@@ -39,6 +42,9 @@ export default function ClientPortal() {
   const [isLoading, setIsLoading] = useState(false)
   const [showBookingForm, setShowBookingForm] = useState(false)
   const [showInvitationWizard, setShowInvitationWizard] = useState(false)
+  const [editInvitation, setEditInvitation] = useState<InvitationItem | null>(null)
+  const [copied, setCopied] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   useEffect(() => {
     if (tab === 'bookings') loadBookings()
@@ -69,6 +75,40 @@ export default function ClientPortal() {
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : 'Error al cancelar')
     }
+  }
+
+  async function toggleInvitationPublished(inv: InvitationItem) {
+    try {
+      await api.patch(`/client/invitations/${inv.id}/toggle-published`)
+      loadInvitations()
+    } catch { /* silent */ }
+  }
+
+  async function deleteInvitation(id: string) {
+    try {
+      await api.delete(`/client/invitations/${id}`)
+      setDeleteConfirm(null)
+      loadInvitations()
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Error al eliminar')
+    }
+  }
+
+  function copyLink(token: string) {
+    const url = `${window.location.origin}/invitacion/${token}`
+    navigator.clipboard.writeText(url).catch(() => {})
+    setCopied(token)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  function openEdit(inv: InvitationItem) {
+    setEditInvitation(inv)
+    setShowInvitationWizard(true)
+  }
+
+  function closeWizard() {
+    setShowInvitationWizard(false)
+    setEditInvitation(null)
   }
 
   return (
@@ -113,7 +153,7 @@ export default function ClientPortal() {
           ))}
         </div>
 
-        {/* Bookings tab */}
+        {/* ── Bookings tab ── */}
         {tab === 'bookings' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -191,19 +231,19 @@ export default function ClientPortal() {
           </div>
         )}
 
-        {/* Invitations tab */}
+        {/* ── Invitations tab ── */}
         {tab === 'invitations' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-ivory/50 text-sm font-dm">
-                {invitations.length} invitaciones
+                {invitations.length} invitación{invitations.length !== 1 ? 'es' : ''}
               </p>
               <button
-                onClick={() => setShowInvitationWizard(true)}
+                onClick={() => { setEditInvitation(null); setShowInvitationWizard(true) }}
                 className="flex items-center gap-2 btn-primary px-4 py-2 text-sm"
               >
                 <Plus size={16} />
-                Crear invitacion
+                Crear invitación
               </button>
             </div>
 
@@ -215,38 +255,114 @@ export default function ClientPortal() {
               <div className="glass rounded-xl border border-white/5 p-12 text-center">
                 <Mail className="mx-auto text-ivory/20 mb-4" size={40} />
                 <p className="text-ivory/40 font-dm">No tienes invitaciones digitales</p>
-                <p className="text-ivory/30 text-sm font-dm mt-2">Crea una en la sección de Invitaciones del sitio</p>
+                <p className="text-ivory/30 text-sm font-dm mt-2 mb-5">
+                  Crea tu primera invitación y compártela con tus invitados.
+                </p>
+                <button
+                  onClick={() => setShowInvitationWizard(true)}
+                  className="btn-outline px-6 py-2 text-sm"
+                >
+                  Crear invitación
+                </button>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
                 {invitations.map(inv => (
                   <motion.div
                     key={inv.id}
-                    className="glass rounded-xl border border-white/5 p-5"
+                    className="glass rounded-xl border border-white/5 p-5 flex flex-col gap-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-ivory font-dm font-medium">{inv.title}</h3>
-                        <p className="text-ivory/50 text-sm font-dm mt-0.5">{inv.eventType} · {inv.eventDate}</p>
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-ivory font-dm font-medium truncate">{inv.title}</h3>
+                        <p className="text-ivory/50 text-sm font-dm mt-0.5">
+                          {inv.eventType} · {inv.eventDate}
+                        </p>
                       </div>
-                      <span className={`text-xs font-dm px-2 py-1 rounded-full ${
-                        inv.isPublished ? 'bg-green-400/10 text-green-400' : 'bg-gray-400/10 text-gray-400'
-                      }`}>
+                      {/* Toggle published badge */}
+                      <button
+                        onClick={() => toggleInvitationPublished(inv)}
+                        className={`flex items-center gap-1 text-xs font-dm px-2 py-1 rounded-full flex-shrink-0 transition-colors ${
+                          inv.isPublished
+                            ? 'bg-green-400/10 text-green-400 hover:bg-green-400/20'
+                            : 'bg-gray-400/10 text-gray-400 hover:bg-gray-400/20'
+                        }`}
+                        title="Clic para publicar/despublicar"
+                      >
+                        {inv.isPublished ? <ToggleRight size={11} /> : <ToggleLeft size={11} />}
                         {inv.isPublished ? 'Publicada' : 'Borrador'}
+                      </button>
+                    </div>
+
+                    {/* Stats row */}
+                    <div className="flex items-center gap-3 text-xs font-dm text-ivory/40">
+                      <span className="flex items-center gap-1">
+                        <Eye size={11} /> {inv.views} vistas
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 mt-4 text-xs font-dm text-ivory/40">
-                      <span className="flex items-center gap-1"><Eye size={12} /> {inv.views} vistas</span>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                      {/* Edit */}
+                      <button
+                        onClick={() => openEdit(inv)}
+                        className="flex items-center gap-1.5 text-xs font-dm text-ivory/50 hover:text-gold transition-colors px-2 py-1.5"
+                      >
+                        <Pencil size={12} /> Editar
+                      </button>
+
+                      {/* Copy link */}
+                      <button
+                        onClick={() => copyLink(inv.shareToken)}
+                        className={`flex items-center gap-1.5 text-xs font-dm transition-colors px-2 py-1.5 ${
+                          copied === inv.shareToken
+                            ? 'text-green-400'
+                            : 'text-ivory/50 hover:text-ivory'
+                        }`}
+                        title="Copiar enlace"
+                      >
+                        {copied === inv.shareToken ? <Check size={12} /> : <Copy size={12} />}
+                        {copied === inv.shareToken ? 'Copiado' : 'Copiar'}
+                      </button>
+
+                      {/* View */}
                       <a
                         href={`/invitacion/${inv.shareToken}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-gold hover:text-gold-light ml-auto"
+                        className="flex items-center gap-1.5 text-xs font-dm text-gold hover:text-gold-light transition-colors px-2 py-1.5 ml-auto"
                       >
-                        Ver <ExternalLink size={12} />
+                        Ver <ExternalLink size={11} />
                       </a>
+
+                      {/* Delete */}
+                      {deleteConfirm === inv.id ? (
+                        <div className="flex items-center gap-1 ml-1">
+                          <button
+                            onClick={() => deleteInvitation(inv.id)}
+                            className="text-red-400 text-xs font-dm hover:text-red-300"
+                          >
+                            ¿Eliminar?
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(null)}
+                            className="text-ivory/30 text-xs hover:text-ivory"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setDeleteConfirm(inv.id)}
+                          className="text-ivory/25 hover:text-danger transition-colors px-1"
+                          title="Eliminar invitación"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
@@ -263,22 +379,23 @@ export default function ClientPortal() {
           />
         )}
 
+        {/* Invitation wizard (create or edit) */}
         {showInvitationWizard && (
           <InvitationWizard
-            onClose={() => setShowInvitationWizard(false)}
-            onSave={() => {
-              loadInvitations()
-              setShowInvitationWizard(false)
-            }}
+            onClose={closeWizard}
+            onSave={() => { loadInvitations(); closeWizard() }}
             ownerName={user?.name}
             ownerEmail={user?.email}
             mode="client"
+            initialData={editInvitation ?? undefined}
           />
         )}
       </div>
     </div>
   )
 }
+
+// ─── Booking Form ─────────────────────────────────────────────────────────────
 
 function BookingForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [form, setForm] = useState({
@@ -292,12 +409,17 @@ function BookingForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const services = ['Bodas & Celebraciones', 'Eventos Corporativos', 'Retratos & Sesiones', 'XV Años & Graduaciones', 'Fotografía Editorial', 'Video + Foto Combo']
-  const eventTypes = ['Boda', 'XV Años', 'Cumpleaños', 'Graduación', 'Corporativo', 'Sesión de retratos', 'Otro']
+  const services = [
+    'Bodas & Celebraciones', 'Eventos Corporativos', 'Retratos & Sesiones',
+    'XV Años & Graduaciones', 'Fotografía Editorial', 'Video + Foto Combo',
+  ]
+  const eventTypes = [
+    'Boda', 'XV Años', 'Cumpleaños', 'Graduación', 'Corporativo', 'Sesión de retratos', 'Otro',
+  ]
 
-  const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [field]: e.target.value }))
-  }
+  const set = (field: string) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

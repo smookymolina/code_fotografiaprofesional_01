@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Mail, Eye, Trash2, Plus } from 'lucide-react'
+import { Mail, Eye, Trash2, Plus, Pencil, Copy, Check, ExternalLink, ToggleLeft, ToggleRight } from 'lucide-react'
 import InvitationWizard from '../invitations/InvitationWizard'
 import api from '../../api/client'
 import { ApiInvitation } from '../invitations/invitationTypes'
@@ -7,11 +7,12 @@ import { ApiInvitation } from '../invitations/invitationTypes'
 export default function AdminInvitations() {
   const [invitations, setInvitations] = useState<ApiInvitation[]>([])
   const [showWizard, setShowWizard] = useState(false)
+  const [editTarget, setEditTarget] = useState<ApiInvitation | undefined>()
   const [isLoading, setIsLoading] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  useEffect(() => {
-    refresh()
-  }, [])
+  useEffect(() => { refresh() }, [])
 
   const refresh = async () => {
     setIsLoading(true)
@@ -23,16 +24,47 @@ export default function AdminInvitations() {
     }
   }
 
+  const openCreate = () => { setEditTarget(undefined); setShowWizard(true) }
+  const openEdit = (inv: ApiInvitation) => { setEditTarget(inv); setShowWizard(true) }
+
+  const closeWizard = () => { setShowWizard(false); setEditTarget(undefined) }
+
+  const handleSave = () => { refresh(); closeWizard() }
+
+  const copyLink = (token: string) => {
+    const url = `${window.location.origin}/invitacion/${token}`
+    navigator.clipboard.writeText(url).catch(() => {})
+    setCopied(token)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  const togglePublished = async (inv: ApiInvitation) => {
+    try {
+      await api.patch(`/admin/invitations/${inv.id}/toggle-published`)
+      refresh()
+    } catch { /* silent */ }
+  }
+
+  const deleteInvitation = async (id: string) => {
+    try {
+      await api.delete(`/admin/invitations/${id}`)
+      setDeleteConfirm(null)
+      refresh()
+    } catch { /* silent */ }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-ivory/50 text-sm font-dm">{invitations.length} invitaciones</p>
+        <p className="text-ivory/50 text-sm font-dm">
+          {invitations.length} invitación{invitations.length !== 1 ? 'es' : ''}
+        </p>
         <button
-          onClick={() => setShowWizard(true)}
+          onClick={openCreate}
           className="flex items-center gap-2 btn-primary px-4 py-2 text-sm"
         >
           <Plus size={16} />
-          Nueva invitacion
+          Nueva invitación
         </button>
       </div>
 
@@ -45,8 +77,11 @@ export default function AdminInvitations() {
           <Mail className="mx-auto text-ivory/20 mb-4" size={40} />
           <p className="text-ivory/40 font-dm">No hay invitaciones creadas</p>
           <p className="text-ivory/30 text-sm font-dm mt-2">
-            Crea una plantilla y asignala a un cliente.
+            Crea una plantilla y asígnala a un cliente.
           </p>
+          <button onClick={openCreate} className="btn-outline mt-5 px-6 py-2 text-sm">
+            Crear primera invitación
+          </button>
         </div>
       ) : (
         <div className="glass rounded-xl border border-white/5 overflow-hidden">
@@ -54,8 +89,11 @@ export default function AdminInvitations() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
-                  {['Titulo', 'Cliente', 'Evento', 'Fecha', 'Estado', 'Acciones'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-ivory/40 text-xs font-dm uppercase tracking-wider">
+                  {['Título', 'Cliente', 'Evento', 'Fecha', 'Vistas', 'Estado', 'Acciones'].map(h => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-ivory/40 text-xs font-dm uppercase tracking-wider"
+                    >
                       {h}
                     </th>
                   ))}
@@ -63,47 +101,99 @@ export default function AdminInvitations() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {invitations.map(inv => (
-                  <tr key={inv.id} className="hover:bg-white/3 transition-colors">
-                    <td className="px-4 py-3 text-ivory text-sm font-dm">{inv.title}</td>
+                  <tr key={inv.id} className="hover:bg-white/3 transition-colors group">
+                    <td className="px-4 py-3 text-ivory text-sm font-dm max-w-[160px] truncate">
+                      {inv.title}
+                    </td>
                     <td className="px-4 py-3 text-ivory/60 text-sm font-dm">
-                      {inv.client?.name || inv.client?.email || 'Sin cliente'}
+                      {inv.client?.name || inv.client?.email || (
+                        <span className="text-ivory/30 italic">Sin cliente</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-ivory/60 text-sm font-dm">{inv.eventType}</td>
                     <td className="px-4 py-3 text-ivory/50 text-xs font-dm">{inv.eventDate}</td>
+                    <td className="px-4 py-3 text-ivory/50 text-xs font-dm">
+                      <span className="flex items-center gap-1">
+                        <Eye size={11} /> {inv.views}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={async () => {
-                          await api.patch(`/admin/invitations/${inv.id}/toggle-published`)
-                          refresh()
-                        }}
-                        className={`text-xs font-dm px-2 py-1 rounded-full ${
-                          inv.isPublished ? 'bg-green-400/10 text-green-400' : 'bg-gray-400/10 text-gray-400'
+                        onClick={() => togglePublished(inv)}
+                        className={`flex items-center gap-1 text-xs font-dm px-2 py-1 rounded-full transition-colors ${
+                          inv.isPublished
+                            ? 'bg-green-400/10 text-green-400 hover:bg-green-400/20'
+                            : 'bg-gray-400/10 text-gray-400 hover:bg-gray-400/20'
                         }`}
+                        title="Clic para cambiar estado"
                       >
+                        {inv.isPublished
+                          ? <ToggleRight size={12} />
+                          : <ToggleLeft size={12} />
+                        }
                         {inv.isPublished ? 'Publicada' : 'Borrador'}
                       </button>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3 text-xs font-dm">
+                      <div className="flex items-center gap-3">
+                        {/* Edit */}
+                        <button
+                          onClick={() => openEdit(inv)}
+                          className="text-ivory/40 hover:text-gold transition-colors"
+                          title="Editar invitación"
+                        >
+                          <Pencil size={14} />
+                        </button>
+
+                        {/* Copy link */}
+                        <button
+                          onClick={() => copyLink(inv.shareToken)}
+                          className={`transition-colors ${
+                            copied === inv.shareToken
+                              ? 'text-green-400'
+                              : 'text-ivory/40 hover:text-ivory'
+                          }`}
+                          title="Copiar enlace"
+                        >
+                          {copied === inv.shareToken ? <Check size={14} /> : <Copy size={14} />}
+                        </button>
+
+                        {/* View */}
                         <a
                           href={`/invitacion/${inv.shareToken}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-gold hover:text-gold-light inline-flex items-center gap-1"
+                          className="text-ivory/40 hover:text-gold transition-colors"
+                          title="Ver invitación"
                         >
-                          <Eye size={12} />
-                          Ver
+                          <ExternalLink size={14} />
                         </a>
-                        <button
-                          onClick={async () => {
-                            await api.delete(`/admin/invitations/${inv.id}`)
-                            refresh()
-                          }}
-                          className="text-ivory/40 hover:text-danger inline-flex items-center gap-1"
-                        >
-                          <Trash2 size={12} />
-                          Eliminar
-                        </button>
+
+                        {/* Delete with confirm */}
+                        {deleteConfirm === inv.id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => deleteInvitation(inv.id)}
+                              className="text-red-400 text-xs font-dm hover:text-red-300"
+                            >
+                              Confirmar
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(null)}
+                              className="text-ivory/30 text-xs font-dm hover:text-ivory"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteConfirm(inv.id)}
+                            className="text-ivory/30 hover:text-danger transition-colors"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -116,12 +206,10 @@ export default function AdminInvitations() {
 
       {showWizard && (
         <InvitationWizard
-          onClose={() => setShowWizard(false)}
-          onSave={() => {
-            refresh()
-            setShowWizard(false)
-          }}
+          onClose={closeWizard}
+          onSave={handleSave}
           mode="admin"
+          initialData={editTarget}
         />
       )}
     </div>

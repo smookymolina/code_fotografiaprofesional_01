@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Copy, Check, MessageCircle } from 'lucide-react'
 import { ApiInvitation } from './invitationTypes'
 import QrCodeImage from './QrCodeImage'
 
@@ -126,6 +128,20 @@ function ThinDivider({ s }: { s: TemplateStyle }) {
   return <div className="h-px w-8 mx-auto" style={{ background: s.divider }} />
 }
 
+/* ── RSVP action resolver ────────────────────────────────────────────────── */
+function getRsvpHref(rsvpValue: string): string {
+  const clean = rsvpValue.replace(/^WhatsApp:\s*/i, '').trim()
+  // Is a URL?
+  if (/^https?:\/\//i.test(clean)) return clean
+  // Is a phone number?
+  const digits = clean.replace(/[\s\-().+]/g, '')
+  if (/^\d{7,}$/.test(digits)) {
+    return `https://wa.me/${digits}?text=${encodeURIComponent('¡Hola! Confirmo mi asistencia.')}`
+  }
+  // Try WhatsApp with whatever they typed
+  return `https://wa.me/?text=${encodeURIComponent(`RSVP: ${clean}`)}`
+}
+
 /* ── Main Strip ──────────────────────────────────────────────────────────── */
 export default function InvitationStrip({
   invitation,
@@ -135,6 +151,8 @@ export default function InvitationStrip({
   shareUrl: string
 }) {
   const s = TEMPLATE_STYLES[invitation.template] ?? TEMPLATE_STYLES.warm
+
+  const [copied, setCopied] = useState(false)
 
   const title = invitation.title
   const names = invitation.names
@@ -151,6 +169,16 @@ export default function InvitationStrip({
   const rsvpValue = invitation.rsvpValue || ''
   const gallery = invitation.gallery || []
   const placeholderCount = gallery.length === 0 ? 4 : 0
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareUrl).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
+  }
+
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
+    `¡Mira mi invitación digital! ${shareUrl}`
+  )}`
 
   return (
     <div className="w-full text-sm leading-relaxed" style={{ background: s.bg, color: s.text }}>
@@ -313,16 +341,20 @@ export default function InvitationStrip({
           <p className="font-cormorant text-lg mb-6 mt-2" style={{ color: s.text }}>
             {rsvpValue}
           </p>
-          <button
-            className="inline-flex items-center justify-center px-8 py-3 text-[0.65rem] uppercase tracking-[0.25em] font-dm transition-opacity duration-200 hover:opacity-80"
+          <a
+            href={getRsvpHref(rsvpValue)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3 text-[0.65rem] uppercase tracking-[0.25em] font-dm transition-opacity duration-200 hover:opacity-80"
             style={{
               background: s.rsvpBg,
               color: s.rsvpText,
               border: `1px solid ${s.glassBorder}`,
             }}
           >
+            <MessageCircle size={13} />
             Confirmar asistencia
-          </button>
+          </a>
         </section>
       ) : null}
 
@@ -330,7 +362,12 @@ export default function InvitationStrip({
       <section className={`${PAD} pb-16 text-center`}>
         <div className="flex items-center gap-3 mb-8">
           <div className="flex-1 h-px" style={{ background: s.divider }} />
+          <span className="text-[0.55rem] uppercase tracking-[0.3em]" style={{ color: s.accent, opacity: 0.5 }}>
+            Compartir
+          </span>
+          <div className="flex-1 h-px" style={{ background: s.divider }} />
         </div>
+
         <SectionLabel s={s}>Comparte esta invitación</SectionLabel>
 
         <div
@@ -348,6 +385,39 @@ export default function InvitationStrip({
             {hashtag}
           </p>
         ) : null}
+
+        {/* Share action buttons */}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-2 px-4 py-2 text-[0.6rem] uppercase tracking-[0.2em] font-dm transition-all duration-200"
+            style={{
+              background: s.glass,
+              border: `1px solid ${s.glassBorder}`,
+              color: copied ? s.accent : s.textMuted,
+            }}
+            title="Copiar enlace"
+          >
+            {copied ? <Check size={12} /> : <Copy size={12} />}
+            {copied ? 'Copiado' : 'Copiar enlace'}
+          </button>
+
+          <a
+            href={whatsappShare}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 text-[0.6rem] uppercase tracking-[0.2em] font-dm transition-all duration-200 hover:opacity-80"
+            style={{
+              background: s.glass,
+              border: `1px solid ${s.glassBorder}`,
+              color: s.textMuted,
+            }}
+            title="Compartir por WhatsApp"
+          >
+            <MessageCircle size={12} />
+            WhatsApp
+          </a>
+        </div>
 
         {/* Studio watermark */}
         <div
