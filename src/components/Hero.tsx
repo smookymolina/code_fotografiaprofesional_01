@@ -158,7 +158,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.95 }}
-            className="font-cormorant italic text-[#F5F0E8]/52 text-xl md:text-2xl mb-10 tracking-wide"
+            className="font-cormorant italic text-[#F5F0E8]/85 text-xl md:text-2xl mb-10 tracking-wide"
             style={{ textShadow: '0 1px 12px rgba(0,0,0,0.6)' }}
           >
             Bodas · Corporativo · Retratos · Eventos Sociales
@@ -227,12 +227,12 @@ export default function Hero() {
         transition={{ delay: 1.65, duration: 0.6 }}
         className="absolute bottom-[4.5rem] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
       >
-        <span className="label-caps text-[#F5F0E8]/28 text-[0.52rem]">Scroll</span>
-        <ChevronDown className="w-4 h-4 text-[#F5F0E8]/32 bounce-slow" />
+        <span className="label-caps text-[#F5F0E8]/65 text-[0.52rem]">Scroll</span>
+        <ChevronDown className="w-4 h-4 text-[#F5F0E8]/60 bounce-slow" />
       </motion.div>
 
       {/* ── Photo credit ── */}
-      <p className="absolute bottom-4 right-6 z-20 label-caps text-white/22 text-[0.52rem]">
+      <p className="absolute bottom-4 right-6 z-20 label-caps text-white/50 text-[0.52rem]">
         © Pedro Vargas Fotografía — 2026
       </p>
 
