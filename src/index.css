@@ -120,6 +120,31 @@ a, button, input, select, textarea, [role="button"] {
   width: 100%;
 }
 
+/*
+ * ── Nav transparent state (over hero dark photo) ────────
+ * The hero ALWAYS has a dark photo background regardless of
+ * light/dark mode toggle. When the nav is transparent (not
+ * scrolled), force light text so it's readable over the photo.
+ */
+.nav-transparent .nav-link {
+  color: rgba(245, 240, 232, 0.72);
+}
+.nav-transparent .nav-link:hover,
+.nav-transparent .nav-link.active {
+  color: #F5F0E8;
+}
+.nav-transparent .nav-link::after {
+  background: #F5F0E8;
+}
+/* Logo & misc elements inside transparent nav */
+.nav-transparent .text-ivory     { color: #F5F0E8 !important; }
+.nav-transparent .text-ivory\/70 { color: rgba(245,240,232,0.70) !important; }
+.nav-transparent .text-ivory\/60 { color: rgba(245,240,232,0.60) !important; }
+.nav-transparent .text-ivory\/50 { color: rgba(245,240,232,0.50) !important; }
+.nav-transparent .bg-ivory       { background-color: rgba(245,240,232,0.85) !important; }
+/* Dark mode toggle icon in transparent state */
+.nav-transparent .hover\:text-gold { }   /* gold hover still works */
+
 /* ── Masonry Gallery ────────────────────────────────────── */
 .masonry-grid {
   columns: 1;
@@ -359,6 +384,28 @@ select option {
 .hero-stats-border { border-color: var(--hero-border); }
 .hero-chevron     { color: var(--hero-text-faint); }
 
+/* ── Hero outline button — always legible on dark photo bg ─ */
+.btn-outline-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: rgba(245, 240, 232, 0.85);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: 1px solid rgba(245, 240, 232, 0.40);
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.btn-outline-light:hover {
+  border-color: #C9A96E;
+  color: #C9A96E;
+  transform: translateY(-1px);
+}
+
 /* ═══════════════════════════════════════════════════════════
    DARK MODE  — restores original v1.1.2 dark design
 ═══════════════════════════════════════════════════════════ */
@@ -411,6 +458,17 @@ html.dark .bg-\[\#1A1A1A\]  { background-color: #1A1A1A  !important; }
 html.dark .bg-\[\#0f0b08\]  { background-color: #0f0b08  !important; }
 html.dark .bg-\[\#1a120d\]  { background-color: #1a120d  !important; }
 html.dark .bg-black         { background-color: #0A0A0A  !important; }
+html.dark .bg-near-black    { background-color: #0A0A0A  !important; }
+html.dark .bg-surface       { background-color: #111111  !important; }
+html.dark .bg-surface-hover { background-color: #1A1A1A  !important; }
+
+/* Alpha variants for custom dashboard backgrounds */
+html.dark .bg-near-black\/95 { background-color: rgba(10, 10, 10, 0.95) !important; }
+html.dark .bg-near-black\/90 { background-color: rgba(10, 10, 10, 0.90) !important; }
+html.dark .bg-near-black\/80 { background-color: rgba(10, 10, 10, 0.80) !important; }
+html.dark .bg-near-black\/70 { background-color: rgba(10, 10, 10, 0.70) !important; }
+html.dark .bg-near-black\/60 { background-color: rgba(10, 10, 10, 0.60) !important; }
+html.dark .bg-near-black\/50 { background-color: rgba(10, 10, 10, 0.50) !important; }
 
 /* Semi-transparent dark overlays — restore */
 html.dark .bg-black\/95  { background-color: rgba(0,0,0,0.95) !important; }
@@ -511,4 +569,17 @@ html.dark input[type="tel"] {
 html.dark select option {
   background-color: #1A1A18 !important;
   color: #F5F0E8 !important;
+}
+
+/* ── Invitation relief / foil animation ─────────────────── */
+@keyframes inv-foil {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+.inv-foil-text {
+  background-size: 200% 200%;
+  animation: inv-foil 3s ease-in-out infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

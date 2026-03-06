@@ -70,7 +70,7 @@ export default function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-500 ${
-          scrolled ? 'glass-nav' : 'bg-transparent'
+          scrolled ? 'glass-nav' : 'bg-transparent nav-transparent'
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex items-center justify-between h-16 md:h-20">

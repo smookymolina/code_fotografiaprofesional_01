@@ -69,6 +69,10 @@ router.put('/services/:id', admin.updateService);
 router.get('/clients', admin.listClients);
 router.post('/clients', admin.createClient);
 router.patch('/clients/:id/toggle-status', admin.toggleClientStatus);
+// Cuentas de acceso
+router.get('/accounts', admin.listAccounts);
+router.post('/accounts', admin.createAccount);
+router.patch('/accounts/:id/toggle-status', admin.toggleAccountStatus);
 // Invitaciones digitales
 router.get('/invitations', admin.listInvitations);
 router.get('/invitations/:id', admin.getInvitation);

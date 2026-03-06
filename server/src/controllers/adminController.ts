@@ -280,6 +280,120 @@ export async function toggleClientStatus(req: AuthRequest, res: Response): Promi
   R.success(res, updated, `Cliente ${updated.isActive ? 'activado' : 'desactivado'}`)
 }
 
+export async function listAccounts(req: AuthRequest, res: Response): Promise<void> {
+  const page = Math.max(1, Number(req.query.page) || 1)
+  const limit = Math.min(100, Number(req.query.limit) || 20)
+  const skip = (page - 1) * limit
+  const search = (req.query.search as string | undefined)?.trim()
+  const role = req.query.role as string | undefined
+  const where: Record<string, unknown> = {}
+
+  if (role && ['ADMIN', 'CLIENT'].includes(role)) {
+    where.role = role
+  }
+  if (search) {
+    where.OR = [
+      { name: { contains: search } },
+      { email: { contains: search } },
+    ]
+  }
+
+  const [accounts, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.user.count({ where }),
+  ])
+
+  R.paginate(res, accounts, total, page, limit)
+}
+
+export async function createAccount(req: AuthRequest, res: Response): Promise<void> {
+  const { name, email, phone, password, role } = req.body as {
+    name?: string
+    email?: string
+    phone?: string
+    password?: string
+    role?: string
+  }
+
+  if (!name?.trim() || !email?.trim() || !password?.trim()) {
+    R.badRequest(res, 'Nombre, correo y contraseña son obligatorios')
+    return
+  }
+
+  const cleanRole = role === 'ADMIN' ? 'ADMIN' : 'CLIENT'
+  const cleanEmail = email.trim().toLowerCase()
+  const cleanPassword = password.trim()
+
+  if (cleanPassword.length < 8 || !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(cleanPassword)) {
+    R.badRequest(res, 'La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula y número')
+    return
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: cleanEmail } })
+  if (existing) {
+    R.conflict(res, 'Ya existe una cuenta con ese correo')
+    return
+  }
+
+  const hashed = await hashPassword(cleanPassword)
+  const account = await prisma.user.create({
+    data: {
+      name: name.trim(),
+      email: cleanEmail,
+      phone: phone?.trim() || null,
+      password: hashed,
+      role: cleanRole,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+    },
+  })
+
+  R.created(res, account, 'Cuenta creada exitosamente')
+}
+
+export async function toggleAccountStatus(req: AuthRequest, res: Response): Promise<void> {
+  const account = await prisma.user.findUnique({
+    where: { id: req.params.id },
+    select: { id: true, name: true, role: true, isActive: true },
+  })
+  if (!account) { R.notFound(res, 'Cuenta no encontrada'); return }
+
+  if (account.id === req.user?.userId && account.isActive) {
+    R.badRequest(res, 'No puedes desactivar tu propia cuenta')
+    return
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: account.id },
+    data: { isActive: !account.isActive },
+    select: { id: true, name: true, role: true, isActive: true },
+  })
+
+  R.success(res, updated, `Cuenta ${updated.isActive ? 'activada' : 'desactivada'}`)
+}
+
 // ─── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
 
 // Invitaciones digitales
@@ -315,6 +429,7 @@ export async function createInvitation(req: AuthRequest, res: Response): Promise
     clientId, eventType, title, names, eventDate, eventTime, venue, locationNote,
     message, quote, hashtag, template, primaryColor, textColor, fontStyle,
     isDark, dressCode, rsvpLabel, rsvpValue, gallery, isPublished, rsvpDeadline,
+    guestGreeting, defaultGuestName,
   } = req.body
 
   const shareToken = uuidv4()
@@ -335,6 +450,8 @@ export async function createInvitation(req: AuthRequest, res: Response): Promise
       rsvpDeadline: rsvpDeadline ? new Date(rsvpDeadline) : undefined,
       gallery: serializeGallery(gallery),
       shareToken,
+      guestGreeting,
+      defaultGuestName,
     },
   })
   R.created(res, normalizeInvitation(invitation))

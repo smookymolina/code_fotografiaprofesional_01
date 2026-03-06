@@ -57,6 +57,9 @@ exports.updateService = updateService;
 exports.listClients = listClients;
 exports.createClient = createClient;
 exports.toggleClientStatus = toggleClientStatus;
+exports.listAccounts = listAccounts;
+exports.createAccount = createAccount;
+exports.toggleAccountStatus = toggleAccountStatus;
 exports.listInvitations = listInvitations;
 exports.getInvitation = getInvitation;
 exports.createInvitation = createInvitation;
@@ -323,6 +326,102 @@ async function toggleClientStatus(req, res) {
     });
     R.success(res, updated, `Cliente ${updated.isActive ? 'activado' : 'desactivado'}`);
 }
+async function listAccounts(req, res) {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Number(req.query.limit) || 20);
+    const skip = (page - 1) * limit;
+    const search = req.query.search?.trim();
+    const role = req.query.role;
+    const where = {};
+    if (role && ['ADMIN', 'CLIENT'].includes(role)) {
+        where.role = role;
+    }
+    if (search) {
+        where.OR = [
+            { name: { contains: search } },
+            { email: { contains: search } },
+        ];
+    }
+    const [accounts, total] = await Promise.all([
+        prisma_1.default.user.findMany({
+            where,
+            skip,
+            take: limit,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                role: true,
+                isActive: true,
+                createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+        }),
+        prisma_1.default.user.count({ where }),
+    ]);
+    R.paginate(res, accounts, total, page, limit);
+}
+async function createAccount(req, res) {
+    const { name, email, phone, password, role } = req.body;
+    if (!name?.trim() || !email?.trim() || !password?.trim()) {
+        R.badRequest(res, 'Nombre, correo y contraseña son obligatorios');
+        return;
+    }
+    const cleanRole = role === 'ADMIN' ? 'ADMIN' : 'CLIENT';
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    if (cleanPassword.length < 8 || !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(cleanPassword)) {
+        R.badRequest(res, 'La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula y número');
+        return;
+    }
+    const existing = await prisma_1.default.user.findUnique({ where: { email: cleanEmail } });
+    if (existing) {
+        R.conflict(res, 'Ya existe una cuenta con ese correo');
+        return;
+    }
+    const hashed = await (0, password_1.hashPassword)(cleanPassword);
+    const account = await prisma_1.default.user.create({
+        data: {
+            name: name.trim(),
+            email: cleanEmail,
+            phone: phone?.trim() || null,
+            password: hashed,
+            role: cleanRole,
+            isActive: true,
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+        },
+    });
+    R.created(res, account, 'Cuenta creada exitosamente');
+}
+async function toggleAccountStatus(req, res) {
+    const account = await prisma_1.default.user.findUnique({
+        where: { id: req.params.id },
+        select: { id: true, name: true, role: true, isActive: true },
+    });
+    if (!account) {
+        R.notFound(res, 'Cuenta no encontrada');
+        return;
+    }
+    if (account.id === req.user?.userId && account.isActive) {
+        R.badRequest(res, 'No puedes desactivar tu propia cuenta');
+        return;
+    }
+    const updated = await prisma_1.default.user.update({
+        where: { id: account.id },
+        data: { isActive: !account.isActive },
+        select: { id: true, name: true, role: true, isActive: true },
+    });
+    R.success(res, updated, `Cuenta ${updated.isActive ? 'activada' : 'desactivada'}`);
+}
 // ─── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
 // Invitaciones digitales
 async function listInvitations(req, res) {
@@ -352,7 +451,7 @@ async function getInvitation(req, res) {
     R.success(res, normalizeInvitation(item));
 }
 async function createInvitation(req, res) {
-    const { clientId, eventType, title, names, eventDate, eventTime, venue, locationNote, message, quote, hashtag, template, primaryColor, textColor, fontStyle, isDark, dressCode, rsvpLabel, rsvpValue, gallery, isPublished, rsvpDeadline, } = req.body;
+    const { clientId, eventType, title, names, eventDate, eventTime, venue, locationNote, message, quote, hashtag, template, primaryColor, textColor, fontStyle, isDark, dressCode, rsvpLabel, rsvpValue, gallery, isPublished, rsvpDeadline, guestGreeting, defaultGuestName, } = req.body;
     const shareToken = (0, uuid_1.v4)();
     const invitation = await prisma_1.default.digitalInvitation.create({
         data: {
@@ -371,6 +470,8 @@ async function createInvitation(req, res) {
             rsvpDeadline: rsvpDeadline ? new Date(rsvpDeadline) : undefined,
             gallery: serializeGallery(gallery),
             shareToken,
+            guestGreeting,
+            defaultGuestName,
         },
     });
     R.created(res, normalizeInvitation(invitation));
@@ -432,7 +533,7 @@ async function listGuestsByInvitation(req, res) {
 async function addGuestsByInvitation(req, res) {
     const invitation = await prisma_1.default.digitalInvitation.findUnique({ where: { id: req.params.id } });
     if (!invitation) {
-        R.notFound(res, 'Invitacion no encontrada');
+        R.notFound(res, 'Invitación no encontrada');
         return;
     }
     const { names } = req.body;
@@ -449,7 +550,7 @@ async function addGuestsByInvitation(req, res) {
 async function deleteGuestByInvitation(req, res) {
     const invitation = await prisma_1.default.digitalInvitation.findUnique({ where: { id: req.params.id } });
     if (!invitation) {
-        R.notFound(res, 'Invitacion no encontrada');
+        R.notFound(res, 'Invitación no encontrada');
         return;
     }
     const guest = await prisma_1.default.invitationGuest.findFirst({

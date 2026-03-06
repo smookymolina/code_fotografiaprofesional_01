@@ -83,6 +83,96 @@ const TEMPLATE_STYLES: Record<string, TemplateStyle> = {
     rsvpText: '#08101e',
     ornament: '#',
   },
+  vintage: {
+    isDark: false,
+    bg: 'linear-gradient(180deg, #f3e8d5 0%, #e8d5bc 50%, #dcc4a4 100%)',
+    heroOverlay:
+      'radial-gradient(circle at 30% 20%, rgba(120,75,30,0.14), transparent 60%), radial-gradient(circle at 75% 70%, rgba(150,100,50,0.1), transparent 55%)',
+    accent: '#7a4a1e',
+    text: '#2c1810',
+    textMuted: 'rgba(44,24,16,0.52)',
+    glass: 'rgba(255,245,225,0.58)',
+    glassBorder: 'rgba(122,74,30,0.2)',
+    divider: 'rgba(122,74,30,0.15)',
+    rsvpBg: 'rgba(122,74,30,0.1)',
+    rsvpText: '#7a4a1e',
+    ornament: '✦',
+  },
+  pearl: {
+    isDark: false,
+    bg: 'linear-gradient(180deg, #fafafa 0%, #f2f2f8 50%, #e8e8f2 100%)',
+    heroOverlay:
+      'radial-gradient(circle at 25% 20%, rgba(160,155,195,0.14), transparent 55%), radial-gradient(circle at 78% 65%, rgba(130,128,172,0.09), transparent 50%)',
+    accent: '#7878aa',
+    text: '#1a1a2e',
+    textMuted: 'rgba(26,26,46,0.5)',
+    glass: 'rgba(255,255,255,0.68)',
+    glassBorder: 'rgba(120,120,170,0.2)',
+    divider: 'rgba(120,120,170,0.14)',
+    rsvpBg: 'rgba(120,120,170,0.1)',
+    rsvpText: '#5858a0',
+    ornament: '◆',
+  },
+  esmeralda: {
+    isDark: true,
+    bg: 'linear-gradient(180deg, #071a12 0%, #0c2618 50%, #071510 100%)',
+    heroOverlay:
+      'radial-gradient(circle at 30% 20%, rgba(40,105,72,0.28), transparent 55%), radial-gradient(circle at 75% 70%, rgba(70,158,106,0.15), transparent 50%)',
+    accent: '#4dba7c',
+    text: '#e0f5ea',
+    textMuted: 'rgba(224,245,234,0.5)',
+    glass: 'rgba(255,255,255,0.05)',
+    glassBorder: 'rgba(77,186,124,0.22)',
+    divider: 'rgba(77,186,124,0.15)',
+    rsvpBg: '#4dba7c',
+    rsvpText: '#071510',
+    ornament: '✿',
+  },
+  noir: {
+    isDark: true,
+    bg: 'linear-gradient(180deg, #080808 0%, #111111 50%, #080808 100%)',
+    heroOverlay:
+      'radial-gradient(circle at 35% 25%, rgba(255,255,255,0.04), transparent 55%), radial-gradient(circle at 68% 72%, rgba(255,255,255,0.025), transparent 50%)',
+    accent: '#d0d0d0',
+    text: '#f0f0f0',
+    textMuted: 'rgba(240,240,240,0.5)',
+    glass: 'rgba(255,255,255,0.04)',
+    glassBorder: 'rgba(255,255,255,0.1)',
+    divider: 'rgba(255,255,255,0.09)',
+    rsvpBg: '#e8e8e8',
+    rsvpText: '#080808',
+    ornament: '—',
+  },
+  lavanda: {
+    isDark: false,
+    bg: 'linear-gradient(180deg, #f5f0ff 0%, #ece2fb 50%, #e0d0f5 100%)',
+    heroOverlay:
+      'radial-gradient(circle at 28% 22%, rgba(110,70,182,0.14), transparent 55%), radial-gradient(circle at 78% 65%, rgba(150,110,215,0.1), transparent 50%)',
+    accent: '#7a50c8',
+    text: '#28183c',
+    textMuted: 'rgba(40,24,60,0.5)',
+    glass: 'rgba(255,255,255,0.6)',
+    glassBorder: 'rgba(122,80,200,0.18)',
+    divider: 'rgba(122,80,200,0.14)',
+    rsvpBg: 'rgba(122,80,200,0.1)',
+    rsvpText: '#7a50c8',
+    ornament: '❀',
+  },
+  terracota: {
+    isDark: false,
+    bg: 'linear-gradient(180deg, #f5ede2 0%, #ecdbc8 50%, #e0c8b0 100%)',
+    heroOverlay:
+      'radial-gradient(circle at 32% 22%, rgba(172,76,46,0.13), transparent 55%), radial-gradient(circle at 72% 65%, rgba(192,112,72,0.09), transparent 50%)',
+    accent: '#aa4b2d',
+    text: '#2e1408',
+    textMuted: 'rgba(46,20,8,0.5)',
+    glass: 'rgba(255,248,238,0.62)',
+    glassBorder: 'rgba(170,75,45,0.18)',
+    divider: 'rgba(170,75,45,0.14)',
+    rsvpBg: 'rgba(170,75,45,0.12)',
+    rsvpText: '#aa4b2d',
+    ornament: '∞',
+  },
 }
 
 const PAD = 'px-7 sm:px-10'
@@ -130,10 +220,27 @@ export default function InvitationStrip({
   invitation: ApiInvitation
   shareUrl: string
 }) {
-  const s = TEMPLATE_STYLES[invitation.template] ?? TEMPLATE_STYLES.warm
+  const templateStr = String(invitation.template ?? 'warm')
+  const hasEmboss = templateStr.endsWith('-emboss')
+  const hasFoil   = templateStr.endsWith('-foil')
+  const baseTemplateId = templateStr.replace(/-emboss$|-foil$/, '')
+  const s = TEMPLATE_STYLES[baseTemplateId] ?? TEMPLATE_STYLES.warm
   const [copied, setCopied] = useState(false)
 
-  const fallbackGallery = getDemoGalleryForTemplate(String(invitation.template))
+  // Relief effect helpers
+  const embossText = hasEmboss
+    ? { textShadow: s.isDark
+        ? '1px 1px 3px rgba(0,0,0,0.65), -0.5px -0.5px 2px rgba(255,255,255,0.1)'
+        : '1px 1px 2.5px rgba(0,0,0,0.16), -0.5px -0.5px 1.5px rgba(255,255,255,0.75)' }
+    : {}
+  const embossPanel = hasEmboss
+    ? { boxShadow: s.isDark
+        ? '4px 4px 10px rgba(0,0,0,0.55), -2px -2px 6px rgba(255,255,255,0.06)'
+        : '4px 4px 10px rgba(0,0,0,0.1), -3px -3px 8px rgba(255,255,255,0.75)' }
+    : {}
+  const foilGradient = `linear-gradient(135deg, ${s.accent} 0%, ${s.isDark ? 'rgba(255,232,140,0.92)' : 'rgba(255,255,255,0.88)'} 38%, ${s.accent} 56%, ${s.isDark ? 'rgba(245,210,100,0.85)' : 'rgba(230,215,165,0.9)'} 78%, ${s.accent} 100%)`
+
+  const fallbackGallery = getDemoGalleryForTemplate(baseTemplateId)
 
   const normalizedGallery = useMemo(() => {
     const source = invitation.gallery && invitation.gallery.length > 0 ? invitation.gallery : fallbackGallery
@@ -191,7 +298,13 @@ export default function InvitationStrip({
 
           <SectionLabel s={s}>{eventType}</SectionLabel>
 
-          <h1 className="font-cormorant text-4xl sm:text-5xl leading-tight mt-4 mb-8" style={{ color: s.text }}>
+          <h1
+            className={`font-cormorant text-4xl sm:text-5xl leading-tight mt-4 mb-8${hasFoil ? ' inv-foil-text' : ''}`}
+            style={hasFoil
+              ? { background: foilGradient }
+              : { color: s.text, ...embossText }
+            }
+          >
             {title}
           </h1>
 
@@ -206,7 +319,7 @@ export default function InvitationStrip({
             )}
           </div>
 
-          <p className="mt-6 text-2xl font-cormorant tracking-wide" style={{ color: s.text }}>
+          <p className="mt-6 text-2xl font-cormorant tracking-wide" style={{ color: s.text, ...embossText }}>
             {names}
           </p>
           <p className="text-[0.65rem] uppercase tracking-[0.3em] mt-2" style={{ color: s.accent }}>
@@ -227,10 +340,12 @@ export default function InvitationStrip({
             style={{
               background: s.glass,
               border: `1px solid ${s.glassBorder}`,
-              boxShadow: s.isDark ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.05)',
+              boxShadow: hasEmboss
+                ? embossPanel.boxShadow
+                : s.isDark ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.05)',
             }}
           >
-            <p className="text-base font-cormorant italic leading-relaxed" style={{ color: s.text }}>
+            <p className="text-base font-cormorant italic leading-relaxed" style={{ color: s.text, ...embossText }}>
               "{quote}"
             </p>
           </div>

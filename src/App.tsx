@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
@@ -69,10 +70,20 @@ function LoadingScreen() {
   )
 }
 
+function ThemeInitializer() {
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme')
+    document.documentElement.classList.toggle('dark', storedTheme === 'dark')
+  }, [])
+
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ThemeInitializer />
         <CustomCursor />
         <Routes>
           <Route path="/" element={<MainSite />} />

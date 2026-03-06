@@ -21,15 +21,42 @@ const TEMPLATES: Array<{ id: InvitationTemplate; label: string; desc: string; gr
     id: 'moderno', label: 'Moderno', desc: 'Navy elegante y lineas limpias',
     gradient: 'linear-gradient(135deg, #08101e 0%, #0f1a30 50%, #08101e 100%)', isDark: true,
   },
+  {
+    id: 'vintage', label: 'Vintage', desc: 'Papel envejecido, sepia elegante',
+    gradient: 'linear-gradient(135deg, #f3e8d5 0%, #e8d5bc 50%, #dcc4a4 100%)', isDark: false,
+  },
+  {
+    id: 'pearl', label: 'Perla', desc: 'Plata suave, lujo contemporaneo',
+    gradient: 'linear-gradient(135deg, #fafafa 0%, #f2f2f8 50%, #e8e8f2 100%)', isDark: false,
+  },
+  {
+    id: 'esmeralda', label: 'Esmeralda', desc: 'Verde profundo, botanico',
+    gradient: 'linear-gradient(135deg, #071a12 0%, #0c2618 50%, #071510 100%)', isDark: true,
+  },
+  {
+    id: 'noir', label: 'Noir', desc: 'Negro y blanco editorial',
+    gradient: 'linear-gradient(135deg, #080808 0%, #111111 50%, #080808 100%)', isDark: true,
+  },
+  {
+    id: 'lavanda', label: 'Lavanda', desc: 'Violeta romantico y mistico',
+    gradient: 'linear-gradient(135deg, #f5f0ff 0%, #ece2fb 50%, #e0d0f5 100%)', isDark: false,
+  },
+  {
+    id: 'terracota', label: 'Terracota', desc: 'Tierra calida, estilo boho',
+    gradient: 'linear-gradient(135deg, #f5ede2 0%, #ecdbc8 50%, #e0c8b0 100%)', isDark: false,
+  },
 ]
 
 const STEPS = ['Plantilla', 'Invitados', 'Datos', 'Contenido', 'Galeria', 'Publicar']
+
+type ReliefEffect = 'none' | 'emboss' | 'foil'
 
 interface InvitationDraft {
   title: string
   eventType: string
   eventDate: string
   template: InvitationTemplate
+  reliefEffect: ReliefEffect
   isPublished: boolean
   rsvpDeadline: string
   guestGreeting: string
@@ -62,6 +89,7 @@ const emptyDraft: InvitationDraft = {
   eventType: 'Boda',
   eventDate: '',
   template: 'floral',
+  reliefEffect: 'none',
   isPublished: false,
   rsvpDeadline: '',
   guestGreeting: 'Hola',
@@ -76,11 +104,16 @@ const emptyDraft: InvitationDraft = {
 }
 
 function draftFromApi(inv: ApiInvitation, ownerName?: string, ownerEmail?: string): InvitationDraft {
+  const rawTemplate = String(inv.template || 'floral')
+  const reliefEffect: ReliefEffect = rawTemplate.endsWith('-emboss') ? 'emboss'
+    : rawTemplate.endsWith('-foil') ? 'foil' : 'none'
+  const baseTemplate = rawTemplate.replace(/-emboss$|-foil$/, '') as InvitationTemplate
   return {
     title: inv.title,
     eventType: inv.eventType,
     eventDate: inv.eventDate,
-    template: (inv.template as InvitationTemplate) || 'floral',
+    template: baseTemplate,
+    reliefEffect,
     isPublished: inv.isPublished,
     rsvpDeadline: inv.rsvpDeadline ? inv.rsvpDeadline.slice(0, 16) : '',
     guestGreeting: inv.guestGreeting || 'Hola',
@@ -276,6 +309,7 @@ export default function InvitationWizard({
         return
       }
 
+      const effectSuffix = draft.reliefEffect && draft.reliefEffect !== 'none' ? `-${draft.reliefEffect}` : ''
       const payload: Record<string, unknown> = {
         eventType: draft.data.eventType,
         title: draft.data.title,
@@ -287,7 +321,7 @@ export default function InvitationWizard({
         message: draft.data.message || undefined,
         quote: draft.data.quote || undefined,
         hashtag: draft.data.hashtag || undefined,
-        template: draft.template,
+        template: `${draft.template}${effectSuffix}`,
         dressCode: draft.data.dressCode || undefined,
         rsvpLabel: draft.data.rsvpLabel || undefined,
         rsvpValue: draft.data.rsvpValue || undefined,
@@ -366,26 +400,73 @@ export default function InvitationWizard({
 
         <div className="p-6 max-h-[68vh] overflow-y-auto space-y-1">
           {step === 0 && (
-            <div className="grid grid-cols-2 gap-4">
-              {TEMPLATES.map(tpl => (
-                <button
-                  key={tpl.id}
-                  onClick={() => setField('template')(tpl.id)}
-                  className={`p-4 border rounded-xl text-left transition-all duration-200 ${
-                    draft.template === tpl.id ? 'border-gold bg-gold/10 scale-[1.02]' : 'border-white/10 hover:border-white/30'
-                  }`}
-                >
-                  <div className="h-24 rounded-lg mb-4 overflow-hidden" style={{ background: tpl.gradient }}>
-                    <div className="h-full flex flex-col items-center justify-center gap-1">
-                      <div className="h-px w-8" style={{ background: tpl.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }} />
-                      <div className="w-1.5 h-1.5 rotate-45" style={{ background: tpl.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)' }} />
-                      <div className="h-px w-8" style={{ background: tpl.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }} />
-                    </div>
-                  </div>
-                  <h4 className="font-dm text-ivory text-sm font-medium">{tpl.label}</h4>
-                  <p className="text-ivory/40 text-xs mt-0.5">{tpl.desc}</p>
-                </button>
-              ))}
+            <div className="space-y-6">
+              <div>
+                <p className="label-caps text-ivory/40 text-[0.6rem] mb-3">Elige una plantilla</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {TEMPLATES.map(tpl => (
+                    <button
+                      key={tpl.id}
+                      onClick={() => setField('template')(tpl.id)}
+                      className={`p-3 border rounded-xl text-left transition-all duration-200 ${
+                        draft.template === tpl.id ? 'border-gold bg-gold/10 scale-[1.02]' : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <div className="h-16 rounded-lg mb-3 overflow-hidden" style={{ background: tpl.gradient }}>
+                        <div className="h-full flex flex-col items-center justify-center gap-1">
+                          <div className="h-px w-6" style={{ background: tpl.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }} />
+                          <div className="w-1 h-1 rotate-45" style={{ background: tpl.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)' }} />
+                          <div className="h-px w-6" style={{ background: tpl.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }} />
+                        </div>
+                      </div>
+                      <h4 className="font-dm text-ivory text-xs font-medium">{tpl.label}</h4>
+                      <p className="text-ivory/40 text-[0.6rem] mt-0.5">{tpl.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Relief effect */}
+              <div>
+                <p className="label-caps text-ivory/40 text-[0.6rem] mb-3">Efecto de Relieve</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { id: 'none'   as ReliefEffect, label: 'Ninguno',  desc: 'Sin efecto adicional' },
+                    { id: 'emboss' as ReliefEffect, label: 'Relieve',  desc: 'Texto en alto relieve' },
+                    { id: 'foil'   as ReliefEffect, label: 'Lamina',   desc: 'Brillo metalico dorado' },
+                  ]).map(ef => (
+                    <button
+                      key={ef.id}
+                      onClick={() => setDraft(p => ({ ...p, reliefEffect: ef.id }))}
+                      className={`p-3 border rounded-xl text-left transition-all duration-200 ${
+                        draft.reliefEffect === ef.id ? 'border-gold bg-gold/10 scale-[1.01]' : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <div className="w-full h-8 rounded mb-2 flex items-center justify-center overflow-hidden"
+                        style={{
+                          background: ef.id === 'foil'
+                            ? 'linear-gradient(135deg, #c9a96e 0%, #f5e0a0 35%, #c9a96e 55%, #e8d070 80%, #c9a96e 100%)'
+                            : ef.id === 'emboss'
+                            ? 'rgba(255,255,255,0.06)'
+                            : 'rgba(255,255,255,0.03)',
+                          boxShadow: ef.id === 'emboss'
+                            ? '2px 2px 5px rgba(0,0,0,0.4), -1px -1px 3px rgba(255,255,255,0.08)'
+                            : 'none',
+                        }}
+                      >
+                        <span className="text-[0.55rem] uppercase tracking-[0.2em]"
+                          style={{
+                            color: ef.id === 'foil' ? '#1a1008' : ef.id === 'emboss' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)',
+                            textShadow: ef.id === 'emboss' ? '1px 1px 2px rgba(0,0,0,0.5), -0.5px -0.5px 1px rgba(255,255,255,0.1)' : 'none',
+                          }}
+                        >Aa</span>
+                      </div>
+                      <h4 className="font-dm text-ivory text-xs font-medium">{ef.label}</h4>
+                      <p className="text-ivory/40 text-[0.6rem] mt-0.5">{ef.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

@@ -18,7 +18,9 @@ import eventXvSalon from '../../assets/photos-web/evento-xv-salon.jpg'
 import eventXvBaileFamiliar from '../../assets/photos-web/evento-xv-baile-familiar.jpg'
 import eventXvPreparativos from '../../assets/photos-web/evento-xv-preparativos.jpg'
 
-export type InvitationTemplate = 'warm' | 'floral' | 'rustic' | 'moderno'
+export type InvitationTemplate =
+  | 'warm' | 'floral' | 'rustic' | 'moderno'
+  | 'vintage' | 'pearl' | 'esmeralda' | 'noir' | 'lavanda' | 'terracota'
 
 export interface ApiInvitationGuestStats {
   total: number
@@ -96,6 +98,42 @@ export const DEMO_GALLERY_BY_TEMPLATE: Record<InvitationTemplate, string[]> = {
     eventXvSalon,
     eventXvBaileFamiliar,
     eventXvPreparativos,
+  ],
+  vintage: [
+    portfolioBodaFuente,
+    portfolioBodaDetalles,
+    eventBodaDecoracion,
+    portfolioBodaBosque,
+  ],
+  pearl: [
+    portfolioXvVestidoRojo,
+    portfolioXvRetratoJardin,
+    eventXvSalon,
+    portfolioXvVestidoNegro,
+  ],
+  esmeralda: [
+    portfolioBodaBosque,
+    portfolioBodasSesionCampo,
+    eventBodaEmotivo,
+    portfolioBodaFuente,
+  ],
+  noir: [
+    eventBodaEntrada,
+    portfolioBodaDetalles,
+    portfolioBodaCamioneta,
+    eventBodaEmotivo,
+  ],
+  lavanda: [
+    portfolioXvVestidoRojo,
+    portfolioXvRamo,
+    eventXvBaileFamiliar,
+    portfolioXvRetratoJardin,
+  ],
+  terracota: [
+    portfolioBodaCamioneta,
+    eventBodaDecoracion,
+    portfolioBodasSesionCampo,
+    portfolioBodaPreparativos,
   ],
 }
 

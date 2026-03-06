@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   CalendarDays, Mail, LogOut, Plus, Eye, CheckCircle, Clock, XCircle,
-  ExternalLink, Pencil, Trash2, Copy, Check, ToggleLeft, ToggleRight, Users,
+  ExternalLink, Pencil, Trash2, Copy, Check, ToggleLeft, ToggleRight, Users, Home,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
@@ -123,13 +123,22 @@ export default function ClientPortal() {
             <h1 className="font-cormorant text-xl text-ivory">{user?.name}</h1>
             <p className="text-ivory/40 text-xs font-dm">{user?.email}</p>
           </div>
-          <button
-            onClick={logout}
-            className="flex items-center gap-2 text-ivory/50 hover:text-ivory text-sm font-dm transition-colors"
-          >
-            <LogOut size={16} />
-            Salir
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href="/"
+              className="flex items-center gap-2 text-ivory/50 hover:text-gold text-sm font-dm transition-colors px-3 py-1.5 rounded-lg hover:bg-gold/8"
+            >
+              <Home size={16} />
+              Volver al Sitio
+            </a>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 text-ivory/50 hover:text-ivory text-sm font-dm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+            >
+              <LogOut size={16} />
+              Salir
+            </button>
+          </div>
         </div>
       </header>
 
@@ -145,7 +154,7 @@ export default function ClientPortal() {
               onClick={() => setTab(id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-dm border-b-2 -mb-px transition-colors ${
                 tab === id
-                  ? 'border-gold text-gold'
+                  ? 'border-gold text-[#6A4B1F] dark:text-gold'
                   : 'border-transparent text-ivory/50 hover:text-ivory'
               }`}
             >

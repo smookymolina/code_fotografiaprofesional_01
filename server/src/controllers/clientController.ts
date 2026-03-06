@@ -213,18 +213,18 @@ export async function updateInvitation(req: AuthRequest, res: Response): Promise
     guestGreeting, defaultGuestName,
   } = req.body
 
+  // rsvpContact is a legacy alias — map it to rsvpValue, never send to Prisma directly
+  const resolvedRsvpValue = rsvpValue || rsvpContact || undefined
+
   const payload: any = {
     eventType, title, names, eventDate, eventTime, venue, locationNote,
     message, quote, hashtag, template, primaryColor, textColor, fontStyle,
-    isDark, dressCode, rsvpLabel, rsvpValue, rsvpContact, isPublished,
+    isDark, dressCode, rsvpLabel, rsvpValue: resolvedRsvpValue, isPublished,
     guestGreeting, defaultGuestName,
   }
 
   if (gallery !== undefined) {
     payload.gallery = serializeGallery(gallery)
-  }
-  if (rsvpContact && !rsvpValue) {
-    payload.rsvpValue = rsvpContact
   }
   if (rsvpDeadline !== undefined) {
     payload.rsvpDeadline = rsvpDeadline ? new Date(rsvpDeadline) : null

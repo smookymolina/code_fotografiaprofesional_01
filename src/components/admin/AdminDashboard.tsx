@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   LayoutDashboard, MessageSquare, CalendarDays, Image,
-  Users, Settings, LogOut, Clock, CheckCircle,
-  TrendingUp, Menu, Mail
+  Users, Settings, LogOut, Clock, CheckCircle, Shield,
+  TrendingUp, Menu, Mail, Home
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
@@ -11,6 +11,7 @@ import AdminInvitations from './AdminInvitations'
 import AdminBookings from './AdminBookings'
 import AdminPortfolio from './AdminPortfolio'
 import AdminClients from './AdminClients'
+import AdminAccounts from './AdminAccounts'
 import AdminSettings from './AdminSettings'
 
 interface DashboardStats {
@@ -55,7 +56,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   DEPOSIT_PAID:{ label: 'Depósito pagado', color: 'text-teal-400 bg-teal-400/10' },
 }
 
-type Section = 'dashboard' | 'contacts' | 'bookings' | 'portfolio' | 'clients' | 'invitations' | 'settings'
+type Section = 'dashboard' | 'contacts' | 'bookings' | 'portfolio' | 'clients' | 'accounts' | 'invitations' | 'settings'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -109,6 +110,7 @@ export default function AdminDashboard() {
     { id: 'bookings',  icon: CalendarDays,   label: 'Reservas',   badge: data?.stats.pendingBookings },
     { id: 'portfolio', icon: Image,          label: 'Portfolio' },
     { id: 'clients',   icon: Users,          label: 'Clientes' },
+    { id: 'accounts',  icon: Shield,         label: 'Cuentas' },
     { id: 'invitations', icon: Mail,         label: 'Invitaciones' },
     { id: 'settings',  icon: Settings,       label: 'Configuración' },
   ]
@@ -136,7 +138,7 @@ export default function AdminDashboard() {
               onClick={() => { setSection(id); setSidebarOpen(false) }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-dm transition-colors ${
                 section === id
-                  ? 'bg-gold/20 text-gold'
+                  ? 'bg-gold/25 text-[#6A4B1F] dark:bg-gold/20 dark:text-gold'
                   : 'text-ivory/60 hover:text-ivory hover:bg-white/5'
               }`}
             >
@@ -151,8 +153,15 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-white/5">
+        {/* Bottom actions */}
+        <div className="p-4 border-t border-white/5 space-y-0.5">
+          <a
+            href="/"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-dm text-ivory/50 hover:text-gold hover:bg-gold/10 transition-colors"
+          >
+            <Home size={17} />
+            Volver al Sitio
+          </a>
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-dm text-ivory/40 hover:text-danger hover:bg-danger/10 transition-colors"
@@ -206,6 +215,7 @@ export default function AdminDashboard() {
               {section === 'bookings'    && <AdminBookings />}
               {section === 'portfolio'   && <AdminPortfolio />}
               {section === 'clients'     && <AdminClients />}
+              {section === 'accounts'    && <AdminAccounts />}
               {section === 'settings'    && <AdminSettings />}
             </>
           )}

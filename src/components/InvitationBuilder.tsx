@@ -6,7 +6,8 @@ import { useAuth } from '../contexts/AuthContext'
 import api from '../api/client'
 
 type Tab = 'estilo' | 'texto' | 'colores'
-type Template = 'warm' | 'moderno' | 'floral' | 'rustic'
+type Template = 'warm' | 'moderno' | 'floral' | 'rustic' | 'vintage' | 'pearl' | 'esmeralda' | 'noir'
+type ReliefEffect = 'none' | 'emboss' | 'foil'
 type EventType = 'Boda' | 'XV Años' | 'Cumpleaños' | 'Bautizo' | 'Graduación' | 'Corporativo'
 type PrimaryColor = 'navy' | 'black' | 'gold' | 'rose' | 'emerald' | 'burgundy'
 type TextColor = 'ivory' | 'white' | 'black'
@@ -60,6 +61,34 @@ const templates: {
     darkGradient: 'linear-gradient(135deg, #08101e 0%, #0f1a30 50%, #08101e 100%)',
     lightGradient: 'linear-gradient(135deg, #e8edf8 0%, #d0dcf0 50%, #c0cce8 100%)',
   },
+  {
+    id: 'vintage',
+    label: 'Vintage',
+    desc: 'Papel envejecido, sepia',
+    darkGradient: 'linear-gradient(135deg, #2a1a08 0%, #3d2a10 50%, #2a1a08 100%)',
+    lightGradient: 'linear-gradient(135deg, #f3e8d5 0%, #e8d5bc 50%, #dcc4a4 100%)',
+  },
+  {
+    id: 'pearl',
+    label: 'Perla',
+    desc: 'Plata suave, lujo moderno',
+    darkGradient: 'linear-gradient(135deg, #1a1a2e 0%, #252540 50%, #1a1a2e 100%)',
+    lightGradient: 'linear-gradient(135deg, #fafafa 0%, #f2f2f8 50%, #e8e8f2 100%)',
+  },
+  {
+    id: 'esmeralda',
+    label: 'Esmeralda',
+    desc: 'Verde profundo, botánico',
+    darkGradient: 'linear-gradient(135deg, #071a12 0%, #0d2618 50%, #071510 100%)',
+    lightGradient: 'linear-gradient(135deg, #e8f5ed 0%, #d5eddf 50%, #c0e0ce 100%)',
+  },
+  {
+    id: 'noir',
+    label: 'Noir',
+    desc: 'Blanco y negro editorial',
+    darkGradient: 'linear-gradient(135deg, #080808 0%, #111111 50%, #080808 100%)',
+    lightGradient: 'linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 50%, #e8e8e8 100%)',
+  },
 ]
 
 const colorSwatches: { id: PrimaryColor; hex: string; label: string }[] = [
@@ -99,6 +128,7 @@ function InvitePreview({
   textColor,
   fontStyle,
   dark,
+  reliefEffect,
 }: {
   data: InviteData
   template: Template
@@ -106,6 +136,7 @@ function InvitePreview({
   textColor: TextColor
   fontStyle: FontStyle
   dark: boolean
+  reliefEffect: ReliefEffect
 }) {
   const tpl = templates.find(t => t.id === template)!
   const accent = primaryColorHex[primaryColor]
@@ -155,12 +186,19 @@ function InvitePreview({
         </p>
 
         <h2
-          className="text-2xl leading-tight"
+          className={`text-2xl leading-tight${reliefEffect === 'foil' ? ' inv-foil-text' : ''}`}
           style={{
-            color: fg,
+            ...( reliefEffect !== 'foil' ? { color: fg } : {
+              background: `linear-gradient(135deg, ${accent} 0%, #f8e8b0 35%, ${accent}bb 55%, #e8d070 78%, ${accent} 100%)`,
+            }),
             fontFamily: font,
             fontWeight: fontStyle === 'sans' ? 600 : 300,
             fontStyle: fontStyle === 'script' ? 'italic' : 'normal',
+            ...(reliefEffect === 'emboss' && {
+              textShadow: dark
+                ? '1px 1px 3px rgba(0,0,0,0.6), -0.5px -0.5px 1.5px rgba(255,255,255,0.1)'
+                : '1px 1px 2px rgba(0,0,0,0.14), -0.5px -0.5px 1px rgba(255,255,255,0.75)',
+            }),
           }}
         >
           {data.name || 'Nombre del Festejado'}
@@ -206,7 +244,14 @@ function InvitePreview({
         )}
 
         {data.showDresscode && data.dresscode && (
-          <div className="mt-2 px-3 py-2 w-full" style={{ border: `1px solid ${accent}33` }}>
+          <div className="mt-2 px-3 py-2 w-full" style={{
+            border: `1px solid ${accent}33`,
+            ...(reliefEffect === 'emboss' && {
+              boxShadow: dark
+                ? '3px 3px 7px rgba(0,0,0,0.5), -1.5px -1.5px 4px rgba(255,255,255,0.07)'
+                : '3px 3px 7px rgba(0,0,0,0.1), -2px -2px 5px rgba(255,255,255,0.72)',
+            }),
+          }}>
             <p className="text-[0.55rem] tracking-[0.2em] uppercase" style={{ color: accent, fontFamily: '"DM Sans", sans-serif' }}>
               Código de Vestimenta
             </p>
@@ -257,6 +302,7 @@ export default function InvitationBuilder() {
   const [textColor, setTextColor] = useState<TextColor>('ivory')
   const [fontStyle, setFontStyle] = useState<FontStyle>('serif')
   const [dark, setDark] = useState(true)
+  const [reliefEffect, setReliefEffect] = useState<ReliefEffect>('none')
   const [customHex, setCustomHex] = useState('')
   const [data, setData] = useState<InviteData>({
     eventType: 'Boda',
@@ -298,6 +344,7 @@ export default function InvitationBuilder() {
     setSaveState('saving')
     setSaveError('')
     try {
+      const effectSuffix = reliefEffect !== 'none' ? `-${reliefEffect}` : ''
       const payload = {
         eventType: data.eventType,
         title: `${data.eventType}${data.name ? ` de ${data.name}` : ''}`,
@@ -309,7 +356,7 @@ export default function InvitationBuilder() {
         dressCode: data.showDresscode ? data.dresscode : undefined,
         rsvpLabel: data.showRsvp ? 'Confirmar asistencia' : undefined,
         rsvpValue: data.showRsvp ? data.rsvp : undefined,
-        template,
+        template: `${template}${effectSuffix}`,
         primaryColor: primaryColorHex[primaryColor],
         textColor: textColorHex[textColor],
         fontStyle,
@@ -699,6 +746,34 @@ export default function InvitationBuilder() {
                       />
                     </button>
                   </div>
+
+                  <div>
+                    <label className="label-caps text-ivory/40 text-[0.6rem] block mb-3">Efecto de Relieve</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { id: 'none'   as ReliefEffect, label: 'Ninguno' },
+                        { id: 'emboss' as ReliefEffect, label: 'Relieve' },
+                        { id: 'foil'   as ReliefEffect, label: 'Lámina' },
+                      ]).map(ef => (
+                        <button
+                          key={ef.id}
+                          onClick={() => setReliefEffect(ef.id)}
+                          className={`py-2.5 text-xs font-dm border transition-all duration-200 ${
+                            reliefEffect === ef.id
+                              ? 'border-gold bg-gold/10 text-gold'
+                              : 'border-ivory/15 text-ivory/40 hover:border-ivory/30 hover:text-ivory/70'
+                          }`}
+                        >
+                          {ef.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-ivory/25 text-[0.6rem] font-dm mt-2">
+                      {reliefEffect === 'emboss' && 'Efecto de alto relieve sobre el texto principal.'}
+                      {reliefEffect === 'foil' && 'Efecto de lamina metalica dorada animada.'}
+                      {reliefEffect === 'none' && 'Sin efecto adicional de relieve.'}
+                    </p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -723,6 +798,7 @@ export default function InvitationBuilder() {
                     textColor={textColor}
                     fontStyle={fontStyle}
                     dark={dark}
+                    reliefEffect={reliefEffect}
                   />
                 </motion.div>
               </AnimatePresence>

@@ -21,6 +21,9 @@ export declare function updateService(req: AuthRequest, res: Response): Promise<
 export declare function listClients(req: AuthRequest, res: Response): Promise<void>;
 export declare function createClient(req: AuthRequest, res: Response): Promise<void>;
 export declare function toggleClientStatus(req: AuthRequest, res: Response): Promise<void>;
+export declare function listAccounts(req: AuthRequest, res: Response): Promise<void>;
+export declare function createAccount(req: AuthRequest, res: Response): Promise<void>;
+export declare function toggleAccountStatus(req: AuthRequest, res: Response): Promise<void>;
 export declare function listInvitations(req: AuthRequest, res: Response): Promise<void>;
 export declare function getInvitation(req: AuthRequest, res: Response): Promise<void>;
 export declare function createInvitation(req: AuthRequest, res: Response): Promise<void>;
