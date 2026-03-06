@@ -142,9 +142,9 @@ a, button, input, select, textarea, [role="button"] {
 .nav-transparent .text-ivory\/60 { color: rgba(245,240,232,0.60) !important; }
 .nav-transparent .text-ivory\/50 { color: rgba(245,240,232,0.50) !important; }
 .nav-transparent .bg-ivory       { background-color: rgba(245,240,232,0.85) !important; }
-/* User dropdown — override white text forcing for light glass-nav background */
-.nav-transparent .user-dropdown .text-ivory\/70 { color: rgba(42, 38, 32, 0.80) !important; }
-.nav-transparent .user-dropdown .text-ivory\/50 { color: rgba(42, 38, 32, 0.55) !important; }
+/* User dropdown — override white text forcing for light glass-nav background (light mode only) */
+html:not(.dark) .nav-transparent .user-dropdown .text-ivory\/70 { color: rgba(42, 38, 32, 0.80) !important; }
+html:not(.dark) .nav-transparent .user-dropdown .text-ivory\/50 { color: rgba(42, 38, 32, 0.55) !important; }
 /* Dark mode toggle icon in transparent state */
 .nav-transparent .hover\:text-gold { }   /* gold hover still works */
 
@@ -461,6 +461,8 @@ html.dark .text-ivory\/40 { color: rgba(245, 240, 232, 0.40) !important; }
 html.dark .text-ivory\/35 { color: rgba(245, 240, 232, 0.35) !important; }
 html.dark .text-ivory\/30 { color: rgba(245, 240, 232, 0.30) !important; }
 html.dark .text-ivory\/55 { color: rgba(245, 240, 232, 0.55) !important; }
+html.dark .text-ivory\/75 { color: rgba(245, 240, 232, 0.75) !important; }
+html.dark .text-ivory\/45 { color: rgba(245, 240, 232, 0.45) !important; }
 
 /* bg-ivory lines (hamburger bars) → light */
 html.dark .bg-ivory { background-color: #F5F0E8 !important; }
