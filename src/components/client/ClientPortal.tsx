@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   CalendarDays, Mail, LogOut, Plus, Eye, CheckCircle, Clock, XCircle,
-  ExternalLink, Pencil, Trash2, Copy, Check, ToggleLeft, ToggleRight, Users, Home, Moon, Sun, HelpCircle,
+  ExternalLink, Pencil, Copy, Check, ToggleLeft, ToggleRight, Users, Home, Moon, Sun, HelpCircle,
+  Archive,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
@@ -59,7 +60,7 @@ export default function ClientPortal() {
   const [showInvitationWizard, setShowInvitationWizard] = useState(false)
   const [editInvitation, setEditInvitation] = useState<InvitationItem | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [archiveConfirm, setArchiveConfirm] = useState<string | null>(null)
   const [guestPanelInv, setGuestPanelInv] = useState<InvitationItem | null>(null)
   const [dark, setDark] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -128,13 +129,13 @@ export default function ClientPortal() {
     } catch { /* silent */ }
   }
 
-  async function deleteInvitation(id: string) {
+  async function archiveInvitation(id: string) {
     try {
-      await api.delete(`/client/invitations/${id}`)
-      setDeleteConfirm(null)
+      await api.post(`/client/invitations/${id}/archive`, { reason: 'Client archived' })
+      setArchiveConfirm(null)
       loadInvitations()
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : 'Error al eliminar')
+      alert(e instanceof Error ? e.message : 'Error al archivar')
     }
   }
 
@@ -499,16 +500,16 @@ export default function ClientPortal() {
                       </a>
 
                       {/* Delete */}
-                      {deleteConfirm === inv.id ? (
+                      {archiveConfirm === inv.id ? (
                         <div className="flex items-center gap-1 ml-1">
                           <button
-                            onClick={() => deleteInvitation(inv.id)}
+                            onClick={() => archiveInvitation(inv.id)}
                             className="text-red-400 text-xs font-dm hover:text-red-300"
                           >
-                            ¿Eliminar?
+                            ¿Archivar?
                           </button>
                           <button
-                            onClick={() => setDeleteConfirm(null)}
+                            onClick={() => setArchiveConfirm(null)}
                             className="text-ivory/30 text-xs hover:text-ivory"
                           >
                             ✕
@@ -516,11 +517,11 @@ export default function ClientPortal() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => setDeleteConfirm(inv.id)}
+                          onClick={() => setArchiveConfirm(inv.id)}
                           className="text-ivory/25 hover:text-danger transition-colors px-1"
-                          title="Eliminar invitación"
+                          title="Archivar invitación"
                         >
-                          <Trash2 size={13} />
+                          <Archive size={13} />
                         </button>
                       )}
                     </div>

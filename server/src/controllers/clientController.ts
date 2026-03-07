@@ -6,6 +6,7 @@ import { AuthRequest } from '../types'
 import * as R from '../utils/response'
 import { sendBookingConfirmation } from '../utils/email'
 import { logActivity } from '../utils/activityLogger'
+import * as archivalService from '../services/archivalService'
 
 function parseGallery(raw?: string | null): string[] {
   if (!raw) return []
@@ -475,5 +476,16 @@ export async function addInvitationPhotos(req: AuthRequest, res: Response): Prom
     data: { gallery: JSON.stringify([...current, ...urls]) },
   })
   R.success(res, normalizeInvitation(updated), 'Fotos agregadas')
+}
+
+export async function archiveInvitation(req: AuthRequest, res: Response): Promise<void> {
+  const { reason } = req.body
+  const existing = await prisma.digitalInvitation.findFirst({
+    where: { id: req.params.id, clientId: req.user!.userId, archivedAt: null },
+  })
+  if (!existing) { R.notFound(res, 'Invitación no encontrada'); return }
+
+  const invitation = await archivalService.archiveInvitation(existing.id, reason)
+  R.success(res, normalizeInvitation(invitation), 'Invitación archivada')
 }
 

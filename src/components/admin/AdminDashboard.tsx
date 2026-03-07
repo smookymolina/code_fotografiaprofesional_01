@@ -160,8 +160,8 @@ export default function AdminDashboard() {
               onClick={() => { setSection(id); setSidebarOpen(false) }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-dm transition-colors ${
                 section === id
-                  ? 'bg-gold/25 text-[#6A4B1F] dark:bg-gold/20 dark:text-gold'
-                  : 'text-ivory/60 hover:text-ivory hover:bg-white/5'
+                  ? 'bg-gold/25 text-[#6A4B1F] dark:bg-gold/20 dark:text-gold font-medium'
+                  : 'text-ivory/60 dark:text-ivory/75 hover:text-ivory hover:bg-white/5'
               }`}
             >
               <Icon size={17} />

@@ -567,37 +567,37 @@ export default function InvitationWizard({
           {step === 2 && (
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Titulo</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Titulo</label>
                 <input value={draft.data.title} onChange={e => setDataAndTop('title', 'title')(e.target.value)} className={ic} placeholder="Estas invitado a nuestra boda" />
               </div>
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Nombres del festejado</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Nombres del festejado</label>
                 <input value={draft.data.names} onChange={e => setData('names')(e.target.value)} className={ic} placeholder="Ej. Ana & Carlos" />
               </div>
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Tipo de evento</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Tipo de evento</label>
                 <input value={draft.data.eventType} onChange={e => setDataAndTop('eventType', 'eventType')(e.target.value)} className={ic} placeholder="Boda, XV, Cumpleanos..." />
               </div>
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Fecha</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Fecha</label>
                 <input value={draft.data.date} onChange={e => setDataAndTop('date', 'eventDate')(e.target.value)} className={ic} placeholder="12 junio 2026" />
               </div>
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Hora</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Hora</label>
                 <input value={draft.data.time} onChange={e => setData('time')(e.target.value)} className={ic} placeholder="18:00" />
               </div>
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Lugar / Venue</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Lugar / Venue</label>
                 <input value={draft.data.venue} onChange={e => setData('venue')(e.target.value)} className={ic} placeholder="Hacienda San Miguel" />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Nota de ubicacion</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Nota de ubicacion</label>
                 <input value={draft.data.locationNote} onChange={e => setData('locationNote')(e.target.value)} className={ic} placeholder="Ciudad, Pais" />
               </div>
 
               {mode === 'admin' && (
                 <div className="md:col-span-2 relative">
-                  <label className="block text-ivory/60 text-xs font-dm mb-1.5">Cliente <span className="text-red-400">*</span></label>
+                  <label className="block text-ivory/80 text-xs font-dm mb-1.5">Cliente <span className="text-red-400">*</span></label>
                   <input
                     type="text"
                     value={clientSearch}
@@ -644,11 +644,11 @@ export default function InvitationWizard({
               {showOwnerFields && (
                 <>
                   <div>
-                    <label className="block text-ivory/60 text-xs font-dm mb-1.5">Tu nombre</label>
+                    <label className="block text-ivory/80 text-xs font-dm mb-1.5">Tu nombre</label>
                     <input value={draft.ownerName || ''} onChange={e => setField('ownerName')(e.target.value)} className={ic} placeholder="Tu nombre" />
                   </div>
                   <div>
-                    <label className="block text-ivory/60 text-xs font-dm mb-1.5">Tu email</label>
+                    <label className="block text-ivory/80 text-xs font-dm mb-1.5">Tu email</label>
                     <input type="email" value={draft.ownerEmail || ''} onChange={e => setField('ownerEmail')(e.target.value)} className={ic} placeholder="tu@email.com" />
                   </div>
                 </>
@@ -659,11 +659,11 @@ export default function InvitationWizard({
           {step === 3 && (
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Saludo al invitado (Ej. Hola, Querida...)</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Saludo al invitado (Ej. Hola, Querida...)</label>
                 <input value={draft.guestGreeting} onChange={e => setField('guestGreeting')(e.target.value)} className={ic} placeholder="Hola" />
               </div>
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">Nombre por defecto (Ej. Familia y Amigos)</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">Nombre por defecto (Ej. Familia y Amigos)</label>
                 <input value={draft.defaultGuestName} onChange={e => setField('defaultGuestName')(e.target.value)} className={ic} placeholder="Familia y Amigos" />
               </div>
               {([
@@ -673,7 +673,7 @@ export default function InvitationWizard({
                 { label: 'Hashtag', field: 'hashtag', span: false },
               ] as const).map(({ label, field, span }) => (
                 <div key={field} className={span ? 'md:col-span-2' : ''}>
-                  <label className="block text-ivory/60 text-xs font-dm mb-1.5">{label}</label>
+                  <label className="block text-ivory/80 text-xs font-dm mb-1.5">{label}</label>
                   <textarea
                     rows={span ? 3 : 2}
                     value={draft.data[field as keyof typeof draft.data]}
@@ -701,7 +701,7 @@ export default function InvitationWizard({
                 </div>
               )}
               <div>
-                <label className="block text-ivory/60 text-xs font-dm mb-1.5">{isEdit ? 'Agregar mas fotos' : 'Subir fotos de galeria'}</label>
+                <label className="block text-ivory/80 text-xs font-dm mb-1.5">{isEdit ? 'Agregar mas fotos' : 'Subir fotos de galeria'}</label>
                 <input
                   type="file"
                   multiple
@@ -720,15 +720,15 @@ export default function InvitationWizard({
             <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-ivory/60 text-xs font-dm mb-1.5">Etiqueta RSVP</label>
+                  <label className="block text-ivory/80 text-xs font-dm mb-1.5">Etiqueta RSVP</label>
                   <input value={draft.data.rsvpLabel} onChange={e => setData('rsvpLabel')(e.target.value)} className={ic} placeholder="Confirmar asistencia" />
                 </div>
                 <div>
-                  <label className="block text-ivory/60 text-xs font-dm mb-1.5">Contacto RSVP</label>
+                  <label className="block text-ivory/80 text-xs font-dm mb-1.5">Contacto RSVP</label>
                   <input value={draft.data.rsvpValue} onChange={e => setData('rsvpValue')(e.target.value)} className={ic} placeholder="+52 55 1234 5678 o https://..." />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-ivory/60 text-xs font-dm mb-1.5">Fecha limite para confirmar asistencia</label>
+                  <label className="block text-ivory/80 text-xs font-dm mb-1.5">Fecha limite para confirmar asistencia</label>
                   <input type="datetime-local" value={draft.rsvpDeadline} onChange={e => setField('rsvpDeadline')(e.target.value)} className={ic} />
                   <p className="text-ivory/30 text-xs mt-1">Opcional. Los invitados no podran responder despues de esta fecha.</p>
                 </div>

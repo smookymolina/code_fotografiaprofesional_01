@@ -60,6 +60,10 @@ if (process.env.NODE_ENV !== 'test') {
 const uploadDir = process.env.UPLOAD_DIR || 'uploads'
 app.use('/uploads', express.static(path.resolve(uploadDir)))
 
+// Servir frontend construido (producción)
+const publicDir = path.resolve(__dirname, '../../public')
+app.use(express.static(publicDir))
+
 // ─── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -77,8 +81,15 @@ app.use('/api/client', clientRoutes)
 app.use('/api/contact', contactRoutes)
 app.use('/api/public', publicRoutes)
 
+// ─── Manejo de SPA (devolver index.html para rutas no encontradas) ──────────────
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return notFoundHandler(req, res)
+  }
+  res.sendFile(path.join(publicDir, 'index.html'))
+})
+
 // ─── Manejo de errores ─────────────────────────────────────────────────────────
-app.use(notFoundHandler)
 app.use(errorHandler)
 
 export default app

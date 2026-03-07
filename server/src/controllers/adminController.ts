@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { hashPassword } from '../utils/password'
 import { AuthRequest } from '../types'
 import * as R from '../utils/response'
+import * as archivalService from '../services/archivalService'
 
 function parseGallery(raw?: string | null): string[] {
   if (!raw) return []
@@ -637,5 +638,39 @@ export async function updateSettings(req: AuthRequest, res: Response): Promise<v
     create: { id: 'main', ...req.body },
   })
   R.success(res, settings, 'Configuración actualizada')
+}
+
+// ─── ARCHIVADO ────────────────────────────────────────────────────────────────
+
+export async function archiveBooking(req: AuthRequest, res: Response): Promise<void> {
+  const { reason } = req.body
+  const booking = await archivalService.archiveBooking(req.params.id, reason)
+  R.success(res, booking, 'Reserva archivada')
+}
+
+export async function unarchiveBooking(req: AuthRequest, res: Response): Promise<void> {
+  const booking = await archivalService.unarchiveBooking(req.params.id)
+  R.success(res, booking, 'Reserva restaurada')
+}
+
+export async function getArchivedBookings(_req: AuthRequest, res: Response): Promise<void> {
+  const bookings = await archivalService.getArchivedBookings()
+  R.success(res, bookings)
+}
+
+export async function archiveInvitation(req: AuthRequest, res: Response): Promise<void> {
+  const { reason } = req.body
+  const invitation = await archivalService.archiveInvitation(req.params.id, reason)
+  R.success(res, normalizeInvitation(invitation), 'Invitación archivada')
+}
+
+export async function unarchiveInvitation(req: AuthRequest, res: Response): Promise<void> {
+  const invitation = await archivalService.unarchiveInvitation(req.params.id)
+  R.success(res, normalizeInvitation(invitation), 'Invitación restaurada')
+}
+
+export async function getArchivedInvitations(_req: AuthRequest, res: Response): Promise<void> {
+  const invitations = await archivalService.getArchivedInvitations()
+  R.success(res, invitations.map(normalizeInvitation))
 }
 

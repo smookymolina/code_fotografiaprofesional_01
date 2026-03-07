@@ -126,7 +126,7 @@ export default function Hero() {
                   animate={{ y: '0%', opacity: 1 }}
                   transition={{ duration: 0.85, delay: 0.38 + i * 0.13, ease: [0.16, 1, 0.3, 1] }}
                   className="font-cormorant font-light text-fluid-hero inline-block text-[#F5F0E8]"
-                  style={{ textShadow: '0 2px 24px rgba(0,0,0,0.55)' }}
+                  style={{ textShadow: '0 2px 18px rgba(0,0,0,0.45)' }}
                 >
                   {word}
                 </motion.span>
@@ -146,7 +146,7 @@ export default function Hero() {
                   className={`font-cormorant font-light text-fluid-hero inline-block ${
                     word === 'Luz' ? 'text-gold italic' : 'text-[#F5F0E8]'
                   }`}
-                  style={{ textShadow: '0 2px 24px rgba(0,0,0,0.55)' }}
+                  style={{ textShadow: '0 2px 18px rgba(0,0,0,0.45)' }}
                 >
                   {word}
                 </motion.span>
@@ -159,7 +159,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.95 }}
             className="font-cormorant italic text-[#F5F0E8]/85 text-xl md:text-2xl mb-10 tracking-wide"
-            style={{ textShadow: '0 1px 12px rgba(0,0,0,0.6)' }}
+            style={{ textShadow: '0 1px 10px rgba(0,0,0,0.5)' }}
           >
             Bodas · Corporativo · Retratos · Eventos Sociales
           </motion.p>
@@ -227,12 +227,12 @@ export default function Hero() {
         transition={{ delay: 1.65, duration: 0.6 }}
         className="absolute bottom-[4.5rem] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
       >
-        <span className="label-caps text-[#F5F0E8]/65 text-[0.52rem]">Scroll</span>
-        <ChevronDown className="w-4 h-4 text-[#F5F0E8]/60 bounce-slow" />
+        <span className="label-caps text-[0.52rem]" style={{ color: '#F5F0E8A6' }}>Scroll</span>
+        <ChevronDown className="w-4 h-4 bounce-slow" style={{ color: '#F5F0E899' }} />
       </motion.div>
 
       {/* ── Photo credit ── */}
-      <p className="absolute bottom-4 right-6 z-20 label-caps text-white/50 text-[0.52rem]">
+      <p className="absolute bottom-4 right-6 z-20 label-caps text-[0.52rem]" style={{ color: '#F5F0E880' }}>
         © Pedro Vargas Fotografía — 2026
       </p>
 

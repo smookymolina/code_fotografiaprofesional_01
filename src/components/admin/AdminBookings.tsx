@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CalendarDays, User, MapPin, Users, DollarSign, X,
-  ChevronRight, RefreshCw, FileText,
+  ChevronRight, RefreshCw, FileText, Archive, RotateCcw
 } from 'lucide-react'
 import api from '../../api/client'
 
@@ -61,8 +61,11 @@ export default function AdminBookings() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState('')
-  const [viewMode, setViewMode] = useState<'active' | 'history'>('active')
+  const [viewMode, setViewMode] = useState<'active' | 'archived'>('active')
   const [selected, setSelected] = useState<Booking | null>(null)
+  const [confirmArchive, setConfirmArchive] = useState<Booking | null>(null)
+  const [archiveReason, setArchiveReason] = useState('')
+  const [isArchiving, setIsArchiving] = useState(false)
 
   useEffect(() => { load() }, [filterStatus, viewMode])
 
@@ -70,11 +73,37 @@ export default function AdminBookings() {
     setIsLoading(true)
     try {
       const params = filterStatus ? `?status=${filterStatus}&limit=50` : '?limit=50'
-      const base = viewMode === 'history' ? '/admin/history/bookings' : '/admin/bookings'
+      const base = viewMode === 'archived' ? '/admin/bookings/archived' : '/admin/bookings'
       const res = await api.get<{ data: Booking[] }>(`${base}${params}`)
       setBookings(res.data)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function handleArchive() {
+    if (!confirmArchive) return
+    setIsArchiving(true)
+    try {
+      await api.post(`/admin/bookings/${confirmArchive.id}/archive`, { reason: archiveReason })
+      setBookings(prev => prev.filter(b => b.id !== confirmArchive.id))
+      setConfirmArchive(null)
+      setArchiveReason('')
+    } catch (e) {
+      console.error(e)
+      alert('Error al archivar')
+    } finally {
+      setIsArchiving(false)
+    }
+  }
+
+  async function handleUnarchive(id: string) {
+    try {
+      await api.post(`/admin/bookings/${id}/unarchive`, {})
+      setBookings(prev => prev.filter(b => b.id !== id))
+    } catch (e) {
+      console.error(e)
+      alert('Error al restaurar')
     }
   }
 
@@ -102,7 +131,7 @@ export default function AdminBookings() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-ivory/50 text-sm font-dm">
           {bookings.length} reserva{bookings.length !== 1 ? 's' : ''}
-          {viewMode === 'history' ? ' en historial' : ''}
+          {viewMode === 'archived' ? ' archivadas' : ''}
           {filterStatus && ` · ${STATUS_CONFIG[filterStatus]?.label}`}
         </p>
         <div className="flex items-center gap-2">
@@ -116,12 +145,12 @@ export default function AdminBookings() {
               Activas
             </button>
             <button
-              onClick={() => { setViewMode('history'); setSelected(null) }}
+              onClick={() => { setViewMode('archived'); setSelected(null) }}
               className={`px-2.5 py-1.5 rounded text-xs font-dm transition-colors ${
-                viewMode === 'history' ? 'bg-gold/20 text-gold' : 'text-ivory/50 hover:text-ivory'
+                viewMode === 'archived' ? 'bg-gold/20 text-gold' : 'text-ivory/50 hover:text-ivory'
               }`}
             >
-              Historial
+              Archivados
             </button>
           </div>
           <button
@@ -205,9 +234,29 @@ export default function AdminBookings() {
 
                   <div className="flex items-center justify-between text-ivory/35 text-xs">
                     <span>Invitados: {b.guestCount ?? '-'}</span>
-                    {viewMode === 'active' && (
-                      <span className="inline-flex items-center gap-1 text-gold/80">Ver detalle <ChevronRight size={13} /></span>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {viewMode === 'active' ? (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setConfirmArchive(b) }}
+                            className="p-1 text-ivory/30 hover:text-red-400 transition-colors"
+                          >
+                            <Archive size={14} />
+                          </button>
+                          <span className="inline-flex items-center gap-1 text-gold/80 font-medium">
+                            Ver detalle <ChevronRight size={13} />
+                          </span>
+                        </>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleUnarchive(b.id) }}
+                          className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded text-ivory/50 hover:text-green-400 transition-colors"
+                        >
+                          <RotateCcw size={12} />
+                          Restaurar
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               )
@@ -272,12 +321,31 @@ export default function AdminBookings() {
                           }
                         </td>
                         <td className="px-4 py-3">
-                          {viewMode === 'active' && (
-                            <ChevronRight
-                              size={16}
-                              className="text-ivory/20 group-hover:text-gold transition-colors"
-                            />
-                          )}
+                          <div className="flex items-center gap-2">
+                            {viewMode === 'active' ? (
+                              <>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setConfirmArchive(b) }}
+                                  className="p-1.5 text-ivory/20 hover:text-red-400 transition-colors"
+                                  title="Archivar"
+                                >
+                                  <Archive size={16} />
+                                </button>
+                                <ChevronRight
+                                  size={16}
+                                  className="text-ivory/20 group-hover:text-gold transition-colors"
+                                />
+                              </>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleUnarchive(b.id) }}
+                                className="p-1.5 text-ivory/20 hover:text-green-400 transition-colors"
+                                title="Restaurar"
+                              >
+                                <RotateCcw size={16} />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )
@@ -297,6 +365,64 @@ export default function AdminBookings() {
             onClose={closeDetail}
             onSaved={onSaved}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Archive confirmation modal */}
+      <AnimatePresence>
+        {confirmArchive && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setConfirmArchive(null)}
+            >
+              <motion.div
+                className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm space-y-4"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 text-gold">
+                  <Archive size={24} />
+                  <h3 className="font-cormorant text-xl">Archivar Reserva</h3>
+                </div>
+                <p className="text-ivory/60 text-sm font-dm">
+                  La reserva de <strong>{confirmArchive.client.name}</strong> se moverá a la sección de archivados.
+                </p>
+                <div>
+                  <label className="block text-ivory/40 text-[10px] uppercase tracking-wider mb-1.5 ml-1">
+                    Motivo (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={archiveReason}
+                    onChange={(e) => setArchiveReason(e.target.value)}
+                    placeholder="Ej: Evento finalizado, Cancelación..."
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-ivory text-sm focus:border-gold/50 focus:outline-none"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setConfirmArchive(null)}
+                    className="flex-1 px-4 py-2 border border-white/10 rounded-lg text-ivory/60 hover:text-ivory text-sm transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleArchive}
+                    disabled={isArchiving}
+                    className="flex-1 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm transition-colors"
+                  >
+                    {isArchiving ? 'Archivando...' : 'Archivar'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

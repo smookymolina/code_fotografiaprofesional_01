@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ScrollText, CheckCircle, LogOut } from 'lucide-react'
 import api from '../../api/client'
