@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import {
   LayoutDashboard, MessageSquare, CalendarDays, Image,
   Users, Settings, LogOut, Clock, CheckCircle, Shield,
-  TrendingUp, Menu, Mail, Home, Moon, Sun
+  TrendingUp, Menu, Mail, Home, Moon, Sun, HelpCircle
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
@@ -13,6 +13,7 @@ import AdminPortfolio from './AdminPortfolio'
 import AdminClients from './AdminClients'
 import AdminAccounts from './AdminAccounts'
 import AdminSettings from './AdminSettings'
+import AdminTutorial from './AdminTutorial'
 
 interface DashboardStats {
   totalContacts: number
@@ -89,6 +90,12 @@ export default function AdminDashboard() {
     if (section === 'contacts') loadContacts()
   }, [section])
 
+  useEffect(() => {
+    const openSidebar = () => setSidebarOpen(true)
+    window.addEventListener('tutorial:open-sidebar', openSidebar as EventListener)
+    return () => window.removeEventListener('tutorial:open-sidebar', openSidebar as EventListener)
+  }, [])
+
   async function loadDashboard() {
     setIsLoading(true)
     try {
@@ -150,6 +157,7 @@ export default function AdminDashboard() {
           {navItems.map(({ id, icon: Icon, label, badge }) => (
             <button
               key={id}
+              data-tutorial={id}
               onClick={() => { setSection(id); setSidebarOpen(false) }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-dm transition-colors ${
                 section === id
@@ -208,13 +216,23 @@ export default function AdminDashboard() {
             </h2>
             <p className="text-ivory/40 text-xs font-dm">Bienvenido, {user?.name}</p>
           </div>
-          <button
-            onClick={() => setDark(d => !d)}
-            aria-label="Cambiar modo"
-            className="ml-auto w-9 h-9 flex items-center justify-center rounded-full text-ivory/60 hover:text-gold transition-colors hover:bg-white/5"
-          >
-            {dark ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('spotlight:reset', { detail: { tourKey: 'admin_tour_done' } }))}
+              aria-label="Ver tutorial"
+              title="Ver tutorial"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-ivory/60 hover:text-gold transition-colors hover:bg-white/5"
+            >
+              <HelpCircle size={17} />
+            </button>
+            <button
+              onClick={() => setDark(d => !d)}
+              aria-label="Cambiar modo"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-ivory/60 hover:text-gold transition-colors hover:bg-white/5"
+            >
+              {dark ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+          </div>
         </header>
 
         {/* Content */}
@@ -243,6 +261,7 @@ export default function AdminDashboard() {
           )}
         </main>
       </div>
+      <AdminTutorial />
     </div>
   )
 }

@@ -16,7 +16,8 @@
       "Bash(npx ts-node:*)",
       "mcp__ide__getDiagnostics",
       "Bash(npx tsx:*)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(xargs ls:*)"
     ]
   }
 }

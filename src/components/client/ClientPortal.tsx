@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   CalendarDays, Mail, LogOut, Plus, Eye, CheckCircle, Clock, XCircle,
-  ExternalLink, Pencil, Trash2, Copy, Check, ToggleLeft, ToggleRight, Users, Home, Moon, Sun,
+  ExternalLink, Pencil, Trash2, Copy, Check, ToggleLeft, ToggleRight, Users, Home, Moon, Sun, HelpCircle,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../api/client'
 import InvitationWizard from '../invitations/InvitationWizard'
 import GuestListPanel from './GuestListPanel'
+import ClientTutorial from './ClientTutorial'
 import { ApiInvitation } from '../invitations/invitationTypes'
 
 interface Booking {
@@ -147,6 +148,7 @@ export default function ClientPortal() {
 
   return (
     <div className="min-h-screen bg-near-black">
+      <ClientTutorial />
       {/* Header */}
       <header className="border-b border-white/5 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -156,6 +158,14 @@ export default function ClientPortal() {
             <p className="text-ivory/40 text-xs font-dm">{user?.email}</p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('spotlight:reset', { detail: { tourKey: 'client_tour_done' } }))}
+              aria-label="Ver tutorial"
+              title="Ver tutorial"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-ivory/60 hover:text-gold transition-colors hover:bg-white/5"
+            >
+              <HelpCircle size={17} />
+            </button>
             <button
               onClick={() => setDark(d => !d)}
               aria-label="Cambiar modo"
@@ -191,6 +201,7 @@ export default function ClientPortal() {
           ] as const).map(({ id, label, icon: Icon }) => (
             <button
               key={id}
+              data-client-tour={id}
               onClick={() => setTab(id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-dm border-b-2 -mb-px transition-colors ${
                 tab === id
