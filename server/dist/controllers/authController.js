@@ -153,14 +153,16 @@ async function refresh(req, res) {
     const newPayload = { userId: user.id, email: user.email, role: user.role };
     const newAccessToken = (0, jwt_1.signAccessToken)(newPayload);
     const newRefreshToken = (0, jwt_1.signRefreshToken)(newPayload);
-    await prisma_1.default.refreshToken.delete({ where: { id: stored.id } });
-    await prisma_1.default.refreshToken.create({
-        data: {
-            token: newRefreshToken,
-            userId: user.id,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-    });
+    await prisma_1.default.$transaction([
+        prisma_1.default.refreshToken.delete({ where: { id: stored.id } }),
+        prisma_1.default.refreshToken.create({
+            data: {
+                token: newRefreshToken,
+                userId: user.id,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
+        }),
+    ]);
     R.success(res, { accessToken: newAccessToken, refreshToken: newRefreshToken }, 'Token renovado');
 }
 // POST /api/auth/logout

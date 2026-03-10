@@ -130,14 +130,16 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   const newAccessToken = signAccessToken(newPayload)
   const newRefreshToken = signRefreshToken(newPayload)
 
-  await prisma.refreshToken.delete({ where: { id: stored.id } })
-  await prisma.refreshToken.create({
-    data: {
-      token: newRefreshToken,
-      userId: user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    },
-  })
+  await prisma.$transaction([
+    prisma.refreshToken.delete({ where: { id: stored.id } }),
+    prisma.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    }),
+  ])
 
   R.success(res, { accessToken: newAccessToken, refreshToken: newRefreshToken }, 'Token renovado')
 }

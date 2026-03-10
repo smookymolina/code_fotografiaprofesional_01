@@ -6,25 +6,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const app_1 = __importDefault(require("./app"));
 const archivalService_1 = require("./services/archivalService");
+const prisma_1 = __importDefault(require("./utils/prisma"));
 const PORT = Number(process.env.PORT) || 3001;
-const stopArchivalWorkflow = (0, archivalService_1.startArchivalWorkflow)();
-const server = app_1.default.listen(PORT, () => {
-    console.log(`\n🎯 Pedro Vargas Fotografía API`);
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`📡 Frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-    console.log(`📋 Health: http://localhost:${PORT}/api/health\n`);
-});
-process.on('SIGTERM', () => {
-    console.log('SIGTERM recibido. Cerrando servidor...');
-    stopArchivalWorkflow();
-    server.close(() => {
-        console.log('Servidor cerrado.');
-        process.exit(0);
+async function main() {
+    // Activa WAL mode en SQLite para soportar lecturas concurrentes durante
+    // escrituras, y busy_timeout para reintentar automáticamente en vez de
+    // fallar de inmediato cuando la DB está ocupada.
+    await prisma_1.default.$executeRawUnsafe('PRAGMA journal_mode=WAL;');
+    await prisma_1.default.$executeRawUnsafe('PRAGMA busy_timeout=5000;');
+    const stopArchivalWorkflow = (0, archivalService_1.startArchivalWorkflow)();
+    const server = app_1.default.listen(PORT, () => {
+        console.log(`\n🎯 Pedro Vargas Fotografía API`);
+        console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+        console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`📡 Frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+        console.log(`📋 Health: http://localhost:${PORT}/api/health\n`);
     });
+    process.on('SIGTERM', () => {
+        console.log('SIGTERM recibido. Cerrando servidor...');
+        stopArchivalWorkflow();
+        server.close(async () => {
+            await prisma_1.default.$disconnect();
+            console.log('Servidor cerrado.');
+            process.exit(0);
+        });
+    });
+    process.on('unhandledRejection', (reason) => {
+        console.error('Promesa rechazada sin manejar:', reason);
+    });
+}
+main().catch((err) => {
+    console.error('Error crítico al iniciar el servidor:', err);
+    process.exit(1);
 });
-process.on('unhandledRejection', (reason) => {
-    console.error('Promesa rechazada sin manejar:', reason);
-});
-exports.default = server;
 //# sourceMappingURL=server.js.map
