@@ -1,8 +1,10 @@
 ﻿import { useEffect, useState } from 'react'
-import { Mail, Eye, Trash2, Plus, Pencil, Copy, Check, ExternalLink, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Mail, Eye, Trash2, Plus, Pencil, Copy, Check, ExternalLink, ToggleLeft, ToggleRight, Users } from 'lucide-react'
 import InvitationWizard from '../invitations/InvitationWizard'
 import api from '../../api/client'
 import { ApiInvitation } from '../invitations/invitationTypes'
+
+type TypeFilter = 'all' | 'general' | 'individual'
 
 export default function AdminInvitations() {
   const [invitations, setInvitations] = useState<ApiInvitation[]>([])
@@ -10,6 +12,7 @@ export default function AdminInvitations() {
   const [editTarget, setEditTarget] = useState<ApiInvitation | undefined>()
   const [isLoading, setIsLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'active' | 'history'>('active')
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all')
   const [copied, setCopied] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
@@ -65,14 +68,38 @@ export default function AdminInvitations() {
     } catch { /* silent */ }
   }
 
+  const filteredInvitations = invitations.filter(inv => {
+    if (typeFilter === 'all') return true
+    return (inv.invitationType || 'general') === typeFilter
+  })
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-ivory/50 text-sm font-dm">
-          {invitations.length} invitación{invitations.length !== 1 ? 'es' : ''}
+          {filteredInvitations.length} invitación{filteredInvitations.length !== 1 ? 'es' : ''}
           {viewMode === 'history' ? ' en historial' : ''}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Filtro por tipo */}
+          <div className="flex items-center gap-1 rounded-lg border border-white/10 p-1">
+            {([
+              { id: 'all' as TypeFilter, label: 'Todas' },
+              { id: 'general' as TypeFilter, label: 'General' },
+              { id: 'individual' as TypeFilter, label: 'Individual' },
+            ]).map(f => (
+              <button
+                key={f.id}
+                onClick={() => setTypeFilter(f.id)}
+                className={`px-2.5 py-1.5 rounded text-xs font-dm transition-colors ${
+                  typeFilter === f.id ? 'bg-gold/20 text-gold' : 'text-ivory/50 hover:text-ivory'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-1 rounded-lg border border-white/10 p-1">
             <button
               onClick={() => setViewMode('active')}
@@ -127,18 +154,28 @@ export default function AdminInvitations() {
       ) : (
         <>
           <div className="md:hidden space-y-3">
-            {invitations.map(inv => (
+            {filteredInvitations.map(inv => {
+              const isIndividual = (inv.invitationType || 'general') === 'individual'
+              const stats = (inv as any).guestStats
+              return (
               <div key={inv.id} className="glass rounded-xl border border-white/5 p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-ivory text-sm font-dm truncate">{inv.title}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-ivory text-sm font-dm truncate">{inv.title}</p>
+                      <span className={`flex-shrink-0 text-[0.55rem] font-dm uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+                        isIndividual ? 'bg-gold/15 text-gold' : 'bg-white/8 text-ivory/40'
+                      }`}>
+                        {isIndividual ? 'Individual' : 'General'}
+                      </span>
+                    </div>
                     <p className="text-ivory/45 text-xs truncate">
                       {inv.client?.name || inv.client?.email || 'Sin cliente'}
                     </p>
                   </div>
                   <button
                     onClick={() => togglePublished(inv)}
-                    className={`flex items-center gap-1 text-xs font-dm px-2 py-1 rounded-full transition-colors ${
+                    className={`flex-shrink-0 flex items-center gap-1 text-xs font-dm px-2 py-1 rounded-full transition-colors ${
                       inv.isPublished
                         ? 'bg-green-400/10 text-green-400 hover:bg-green-400/20'
                         : 'bg-gray-400/10 text-gray-400 hover:bg-gray-400/20'
@@ -164,6 +201,16 @@ export default function AdminInvitations() {
                     <p className="text-ivory/70 inline-flex items-center gap-1"><Eye size={11} /> {inv.views}</p>
                   </div>
                 </div>
+
+                {isIndividual && stats && (
+                  <div className="flex items-center gap-3 text-xs font-dm py-1.5 px-3 bg-white/3 rounded-lg border border-white/5">
+                    <Users size={11} className="text-ivory/30" />
+                    <span className="text-green-400">{stats.confirmed} confirm.</span>
+                    <span className="text-ivory/40">{stats.pending} pend.</span>
+                    <span className="text-red-400/70">{stats.declined} decl.</span>
+                    <span className="text-ivory/25 ml-auto">{stats.total} total</span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between gap-2">
                   <button
@@ -218,7 +265,8 @@ export default function AdminInvitations() {
                   </button>
                 )}
               </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="hidden md:block glass rounded-xl border border-white/5 overflow-hidden">
@@ -226,7 +274,7 @@ export default function AdminInvitations() {
               <table className="w-full min-w-[960px]">
                 <thead>
                   <tr className="border-b border-white/5">
-                    {['Título', 'Cliente', 'Evento', 'Fecha', 'Vistas', 'Estado', 'Acciones'].map(h => (
+                    {['Título', 'Cliente', 'Tipo / RSVP', 'Evento', 'Vistas', 'Estado', 'Acciones'].map(h => (
                       <th
                         key={h}
                         className="px-4 py-3 text-left text-ivory/40 text-xs font-dm uppercase tracking-wider"
@@ -237,7 +285,10 @@ export default function AdminInvitations() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {invitations.map(inv => (
+                  {filteredInvitations.map(inv => {
+                    const isIndividual = (inv.invitationType || 'general') === 'individual'
+                    const stats = (inv as any).guestStats
+                    return (
                     <tr key={inv.id} className="hover:bg-white/3 transition-colors group">
                       <td className="px-4 py-3 text-ivory text-sm font-dm max-w-[160px] truncate">
                         {inv.title}
@@ -247,8 +298,26 @@ export default function AdminInvitations() {
                           <span className="text-ivory/30 italic">Sin cliente</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-ivory/60 text-sm font-dm">{inv.eventType}</td>
-                      <td className="px-4 py-3 text-ivory/50 text-xs font-dm">{inv.eventDate}</td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <span className={`inline-flex items-center gap-1 text-[0.6rem] font-dm uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            isIndividual ? 'bg-gold/15 text-gold' : 'bg-white/8 text-ivory/40'
+                          }`}>
+                            {isIndividual ? '✦ Individual' : '✉ General'}
+                          </span>
+                          {isIndividual && stats && (
+                            <div className="flex items-center gap-2 text-[0.65rem] font-dm">
+                              <span className="text-green-400">{stats.confirmed}✓</span>
+                              <span className="text-ivory/35">{stats.pending}?</span>
+                              <span className="text-red-400/60">{stats.declined}✗</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-ivory/60 text-xs font-dm">
+                        <div>{inv.eventType}</div>
+                        <div className="text-ivory/35">{inv.eventDate}</div>
+                      </td>
                       <td className="px-4 py-3 text-ivory/50 text-xs font-dm">
                         <span className="flex items-center gap-1">
                           <Eye size={11} /> {inv.views}
@@ -330,7 +399,8 @@ export default function AdminInvitations() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
